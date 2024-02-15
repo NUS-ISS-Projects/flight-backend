@@ -4,9 +4,7 @@
 <!-- Provide a brief and descriptive title for your pull request -->
 
 ## Description
-<!-- 
-JIRA ID
--->
+<Include JIRA ID here, for example SCRUM-101>
 
 ## Type of Change
 <!-- Check the box that applies to your pull request -->
