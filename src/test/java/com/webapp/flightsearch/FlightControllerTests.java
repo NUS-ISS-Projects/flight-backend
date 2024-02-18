@@ -1,6 +1,8 @@
 package com.webapp.flightsearch;
 
 import com.amadeus.exceptions.ResponseException;
+import com.webapp.flightsearch.controller.FlightController;
+import com.webapp.flightsearch.service.AmadeusConnect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
