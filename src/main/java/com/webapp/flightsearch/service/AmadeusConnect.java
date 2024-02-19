@@ -3,7 +3,7 @@
  * This class is marked as a Spring Service, meaning it is a singleton and can be autowired where needed.
  *
  */
-package com.webapp.flightsearch;
+package com.webapp.flightsearch.service;
 
 import org.springframework.stereotype.Service;
 
