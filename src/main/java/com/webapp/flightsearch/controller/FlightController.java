@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.amadeus.exceptions.ResponseException;
+import com.amadeus.resources.FlightOfferSearch;
 import com.amadeus.resources.Location;
 
 import java.util.Collections;
@@ -80,7 +81,19 @@ public class FlightController {
     }
 
     @GetMapping("/locations")
-	public Location[] locations(@RequestParam(required=true) String keyword) throws ResponseException {
-		return this.amadeusConnect.location(keyword);
-	}
+    public ResponseEntity<Location[]> locations(@RequestParam(required=true) String keyword) throws ResponseException {
+        Location[] locations = this.amadeusConnect.location(keyword);
+        return new ResponseEntity<>(locations, HttpStatus.OK);
+    }
+
+    @GetMapping("/flights")
+    public ResponseEntity<FlightOfferSearch[]> flights(@RequestParam(required=true) String origin,
+                                          @RequestParam(required=true) String destination,
+                                          @RequestParam(required=true) String departDate,
+                                          @RequestParam(required=true) String adults,
+                                          @RequestParam(required = false) String returnDate)
+                                          throws ResponseException {
+        FlightOfferSearch[] flights = this.amadeusConnect.flights(origin, destination, departDate, adults, returnDate);
+        return new ResponseEntity<>(flights, HttpStatus.OK);
+    }
 }
