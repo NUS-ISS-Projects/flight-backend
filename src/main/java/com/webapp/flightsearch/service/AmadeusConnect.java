@@ -39,24 +39,48 @@ public class AmadeusConnect {
 
     public FlightOfferSearch[] flights(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
         
-        FlightOfferSearch[] flightOffers = amadeus.shopping.flightOffersSearch.get(
-                                        Params.with("originLocationCode", origin)
-                                                .and("destinationLocationCode", destination)
-                                                .and("departureDate", departDate)
-                                                .and("returnDate", returnDate)
-                                                .and("adults", adults)
-                                                .and("max", 3));
-        return flightOffers;
-    }
+        FlightOfferSearch[] flightOffers;
 
-    public List<FlightOfferDetail> itineraries(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
-        FlightOfferSearch[] flightOffers = amadeus.shopping.flightOffersSearch.get(
+        if (returnDate == null) {
+            flightOffers = amadeus.shopping.flightOffersSearch.get(
+                Params.with("originLocationCode", origin)
+                        .and("destinationLocationCode", destination)
+                        .and("departureDate", departDate)
+                        .and("adults", adults)
+                        .and("max", 3));
+        }
+        else {
+            flightOffers = amadeus.shopping.flightOffersSearch.get(
                 Params.with("originLocationCode", origin)
                         .and("destinationLocationCode", destination)
                         .and("departureDate", departDate)
                         .and("returnDate", returnDate)
                         .and("adults", adults)
                         .and("max", 3));
+        }
+        return flightOffers;
+    }
+
+    public List<FlightOfferDetail> itineraries(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
+        FlightOfferSearch[] flightOffers;
+
+        if (returnDate == null) {
+            flightOffers = amadeus.shopping.flightOffersSearch.get(
+                Params.with("originLocationCode", origin)
+                        .and("destinationLocationCode", destination)
+                        .and("departureDate", departDate)
+                        .and("adults", adults)
+                        .and("max", 3));
+        }
+        else {
+            flightOffers = amadeus.shopping.flightOffersSearch.get(
+                Params.with("originLocationCode", origin)
+                        .and("destinationLocationCode", destination)
+                        .and("departureDate", departDate)
+                        .and("returnDate", returnDate)
+                        .and("adults", adults)
+                        .and("max", 3));
+        }
     
         List<FlightOfferDetail> flightOfferDetails = new ArrayList<>();
         Flight flight = new Flight();
