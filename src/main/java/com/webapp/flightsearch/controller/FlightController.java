@@ -9,7 +9,8 @@ package com.webapp.flightsearch.controller;
 
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
-import com.webapp.flightsearch.entity.Flight.FlightItenerary;
+import com.webapp.flightsearch.entity.Flight.FlightItinerary;
+import com.webapp.flightsearch.entity.Flight.FlightOfferDetail;
 import com.webapp.flightsearch.entity.Role;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.RoleRepository;
@@ -110,13 +111,13 @@ public class FlightController {
     }
 
     @GetMapping("/itineraries")
-    public ResponseEntity<List<FlightItenerary>> itineraries(@RequestParam(required=true) String origin,
+    public ResponseEntity<List<FlightOfferDetail>> itineraries(@RequestParam(required=true) String origin,
                                           @RequestParam(required=true) String destination,
                                           @RequestParam(required=true) String departDate,
                                           @RequestParam(required=true) String adults,
                                           @RequestParam(required = false) String returnDate)
                                           throws ResponseException {
-        List<FlightItenerary> itineraries = this.amadeusConnect.itineraries(origin, destination, departDate, adults, returnDate);
+        List<FlightOfferDetail> itineraries = this.amadeusConnect.itineraries(origin, destination, departDate, adults, returnDate);
         return new ResponseEntity<>(itineraries, HttpStatus.OK);
     }
 }
