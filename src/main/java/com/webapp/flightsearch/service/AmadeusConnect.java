@@ -11,8 +11,15 @@ import com.amadeus.Amadeus;
 import com.amadeus.Params;
 import com.amadeus.referenceData.Locations;
 import com.amadeus.resources.FlightOfferSearch;
+import com.amadeus.resources.FlightOfferSearch.Itinerary;
+import com.amadeus.resources.FlightOfferSearch.SearchSegment;
 import com.amadeus.resources.Location;
+import com.webapp.flightsearch.entity.Flight;
+import com.webapp.flightsearch.entity.Flight.FlightItenerary;
 import com.amadeus.exceptions.ResponseException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AmadeusConnect {
@@ -30,12 +37,50 @@ public class AmadeusConnect {
     }
 
     public FlightOfferSearch[] flights(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
-        return amadeus.shopping.flightOffersSearch.get(
-                  Params.with("originLocationCode", origin)
-                          .and("destinationLocationCode", destination)
-                          .and("departureDate", departDate)
-                          .and("returnDate", returnDate)
-                          .and("adults", adults)
-                          .and("max", 3));
+        
+        FlightOfferSearch[] flightOffers = amadeus.shopping.flightOffersSearch.get(
+                                        Params.with("originLocationCode", origin)
+                                                .and("destinationLocationCode", destination)
+                                                .and("departureDate", departDate)
+                                                .and("returnDate", returnDate)
+                                                .and("adults", adults)
+                                                .and("max", 3));
+        return flightOffers;
+    }
+
+    public List<FlightItenerary> itineraries(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
+
+        FlightOfferSearch[] flightOffers = amadeus.shopping.flightOffersSearch.get(
+                                        Params.with("originLocationCode", origin)
+                                                .and("destinationLocationCode", destination)
+                                                .and("departureDate", departDate)
+                                                .and("returnDate", returnDate)
+                                                .and("adults", adults)
+                                                .and("max", 3));
+
+        List<FlightItenerary> flightIteneraries = new ArrayList<FlightItenerary>();
+        Flight flight = new Flight();
+
+        for (FlightOfferSearch offer : flightOffers) {
+            for (Itinerary itinerary : offer.getItineraries()) {
+                for (SearchSegment segment : itinerary.getSegments()) {
+                    String departureTime = segment.getDeparture().getAt();
+                    String departureIataCode = segment.getDeparture().getIataCode();
+                    String arrivalTime = segment.getArrival().getAt();
+                    String arrivalIataCode = segment.getArrival().getIataCode();
+                    String airline = segment.getCarrierCode();
+                    boolean isDirectFlight = segment.getNumberOfStops() == 0;
+                    double totalPrice = offer.getPrice().getTotal();
+                    String currency = offer.getPrice().getCurrency();
+                    int bookableSeats = offer.getNumberOfBookableSeats();
+                    String duration = segment.getDuration();
+
+                    FlightItenerary flightInfo = flight.new FlightItenerary(departureTime, departureIataCode, arrivalTime, arrivalIataCode, airline, isDirectFlight, totalPrice, currency, bookableSeats, duration);
+                    flightIteneraries.add(flightInfo);
+                }
+            }
+        }
+
+        return flightIteneraries;
     }
 }
