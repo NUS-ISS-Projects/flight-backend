@@ -1,0 +1,12 @@
+[Unit]
+Description=Flight Backend Startup Script
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/luckilystar08/flight-backend/flightBackend.sh
+User=luckilystar08
+WorkingDirectory=/home/luckilystar08/flight-backend
+
+[Install]
+WantedBy=multi-user.target
