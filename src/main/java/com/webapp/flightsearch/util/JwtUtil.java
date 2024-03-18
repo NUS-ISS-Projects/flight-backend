@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Date;
 
 public class JwtUtil {
-    private static String jwtSecret = "yourSecretKey"; // Replace with your secret key
+    private static String jwtSecret = "FlightSecretKey"; // Replace with your secret key
     private static  int jwtExpirationMs = 86400000; // Token validity in milliseconds
 
     public static String generateJwtToken(Authentication authentication) {
