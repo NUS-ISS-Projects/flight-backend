@@ -101,13 +101,16 @@ public class FlightController {
     }
 
     @GetMapping("/flights")
-    public ResponseEntity<FlightOfferSearch[]> flights(@RequestParam(required=true) String origin,
+    public ResponseEntity<FlightOfferSearch[]> flights(
+                                          @RequestParam(required=true) String origin,
                                           @RequestParam(required=true) String destination,
                                           @RequestParam(required=true) String departDate,
                                           @RequestParam(required=true) String adults,
+                                          @RequestParam(required=false) String children,
+                                          @RequestParam(required=false) String travelClass,
                                           @RequestParam(required = false) String returnDate)
                                           throws ResponseException {
-        FlightOfferSearch[] flights = this.amadeusConnect.flights(origin, destination, departDate, adults, returnDate);
+        FlightOfferSearch[] flights = this.amadeusConnect.flights(origin, destination, departDate, adults,children, travelClass, returnDate);
         return new ResponseEntity<>(flights, HttpStatus.OK);
     }
 }

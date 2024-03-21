@@ -51,7 +51,7 @@ class FlightControllerTests {
 
         com.amadeus.resources.FlightOfferSearch mockFlight = mock(com.amadeus.resources.FlightOfferSearch.class);
         mockFlightsLONToNYC = new com.amadeus.resources.FlightOfferSearch[]{mockFlight};
-        when(amadeusConnect.flights("LON", "NYC", "2024-11-15", "3", "2024-11-18")).thenReturn(mockFlightsLONToNYC);
+        when(amadeusConnect.flights("LON", "NYC", "2024-11-15", "3", "1","ECONOMY",  "2024-11-18")).thenReturn(mockFlightsLONToNYC);
     }
 
     @Test
@@ -72,7 +72,10 @@ class FlightControllerTests {
                 .param("destination", "NYC")
                 .param("departDate", "2024-11-15")
                 .param("adults", "3")
+                .param("children", "1")
+                .param("travelClass","ECONOMY")
                 .param("returnDate", "2024-11-18")
+
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print()) // This will print the request and response details
                 .andExpect(status().isOk())
