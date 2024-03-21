@@ -20,7 +20,8 @@ public class AmadeusConnect {
     // TODO: Move to application.properties and .env for security purposes
     private AmadeusConnect() {
         this.amadeus = Amadeus
-            .builder("4LKfQmyyiC6Gx0oQpAJi1SrdC2yUlOlr", "byBwbKR9KH7e4oDu")
+            .builder("0wiqVIyMdIKWHKiHAKwj3JAsBw3UBi9q", "2kvHWWeDwQaL1zMq")
+            .setHostname("production")
             .build();
     }
     public Location[] location(String keyword) throws ResponseException {
