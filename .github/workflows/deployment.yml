@@ -50,7 +50,7 @@ jobs:
           USERNAME: ${{ secrets.GHCR_USERNAME }}
           PASSWORD: ${{ secrets.GHCR_PASSWORD }}
         run: |
-          echo $GHCR_PASSWORD | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
+          docker login ghcr.io -u $GHCR_USERNAME --password-stdin <<< $GHCR_PASSWORD
           docker build --tag $IMAGE_NAME .
           docker push $IMAGE_NAME          
 
