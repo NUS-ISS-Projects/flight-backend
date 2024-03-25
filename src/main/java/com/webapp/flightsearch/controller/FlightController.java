@@ -114,7 +114,7 @@ public class FlightController {
         return new ResponseEntity<>(flights, HttpStatus.OK);
     }
 
-    @GetMapping("/hello")
+    @GetMapping("/hello2")
     public ResponseEntity<String> hello() {
         return new ResponseEntity<>("Hello World!", HttpStatus.OK);
     }
