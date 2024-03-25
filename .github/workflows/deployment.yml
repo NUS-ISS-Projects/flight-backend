@@ -33,6 +33,9 @@ jobs:
     name: build-docker
     needs: setup-build-deploy
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        packages: write
     steps:
       - name: checkout
         uses: actions/checkout@v2
