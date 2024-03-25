@@ -1,10 +1,9 @@
 name: Docker Build and Deploy to GKE
 
 on:
-    push:
-      branches: [ "main" ]
-    pull_request:
-      branches: [ "main" ]
+  push:
+    tags:
+      - 'v*'
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend:latest
@@ -55,10 +54,11 @@ jobs:
         env:
           USERNAME: ${{ secrets.GITHUB_USERNAME }}
           PASSWORD: ${{ secrets.GITHUB_PASSWORD }}
+          IMAGE_TAG: ${{ github.ref_name }}
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          docker build --tag $IMAGE_NAME .
-          docker push $IMAGE_NAME          
+          docker build --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}      
 
   deploy-to-gke:
     needs: build-docker-image
