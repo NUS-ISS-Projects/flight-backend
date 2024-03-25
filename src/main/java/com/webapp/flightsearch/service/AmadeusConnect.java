@@ -30,13 +30,16 @@ public class AmadeusConnect {
             .and("subType", Locations.AIRPORT));
     }
 
-    public FlightOfferSearch[] flights(String origin, String destination, String departDate, String adults, String returnDate) throws ResponseException {
+    public FlightOfferSearch[] flights(String origin, String destination, String departDate, String adults,
+                                       String children, String travelClass, String returnDate) throws ResponseException {
         return amadeus.shopping.flightOffersSearch.get(
                   Params.with("originLocationCode", origin)
                           .and("destinationLocationCode", destination)
                           .and("departureDate", departDate)
                           .and("returnDate", returnDate)
                           .and("adults", adults)
-                          .and("max", 3));
+                          .and("children",children)
+                          .and("travelClass",travelClass)
+                          .and("max", 20));
     }
 }
