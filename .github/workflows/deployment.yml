@@ -27,7 +27,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: gcpdeployment-0.0.1-SNAPSHOT.jar
+          name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
   build-docker-image:
     name: build-docker
@@ -39,7 +39,7 @@ jobs:
       - name: Retrieve saved jar
         uses: actions/download-artifact@v2
         with:
-          name: gcpdeployment-0.0.1-SNAPSHOT.jar
+          name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
 
       - name: List files in target directory
