@@ -3,10 +3,15 @@ kind: Deployment
 metadata:
   name: flight-application
 spec:
-  replicas: 1
+  replicas: 1  # You can adjust the number of replicas as needed
   selector:
     matchLabels:
       app: flight-application
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1  # Define how many pods can be unavailable during the rolling update
+      maxSurge: 1  # Define how many extra pods can be created during the rolling update
   template:
     metadata:
       labels:
@@ -14,8 +19,14 @@ spec:
     spec:
       containers:
         - name: flight-application
-          image: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+          image: ghcr.io/nus-iss-projects/flight-backend/flightbackend  # Ensure this image tag is updated in your CI/CD pipeline
           ports:
             - containerPort: 8888
+          readinessProbe:  # Define a readiness probe to check if your application is ready to serve traffic
+            httpGet:
+              path: /api/health  # Adjust this to the path your application uses for health checks
+              port: 8888  # The port your application listens on
+            initialDelaySeconds: 10  # Time to wait before the first probe is initiated
+            periodSeconds: 5  # How often to perform the probe
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: dockerconfigjson-github-com  # Secret for pulling images from GHCR

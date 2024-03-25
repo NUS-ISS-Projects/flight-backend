@@ -95,4 +95,11 @@ jobs:
       - name: Apply Kubernetes Manifests with kustomize
         run: |
           kustomize build ./k8s/overlays/prod | kubectl apply -f -
+
+      - name: Check Deployment Status
+        run: kubectl rollout status deployment/flight-application --timeout=2m
+
+      - name: Rollback Deployment if Unsuccessful
+        if: ${{ failure() }}
+        run: kubectl rollout undo deployment/flight-application
           
