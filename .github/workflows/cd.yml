@@ -66,12 +66,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup GCP
-        uses: google-github-actions/setup-gcloud@v1
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCLOUD_AUTH }}
-          export_default_credentials: true
+          credentials_json: '${{ secrets.GCLOUD_AUTH }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
 
       - name: Activate GCP Service Account
         run: |
@@ -91,10 +95,6 @@ jobs:
         run: |
           curl https://sdk.cloud.google.com | bash
           echo "$HOME/google-cloud-sdk/bin" >> $GITHUB_PATH
-
-      - name: Verify gke-gcloud-auth-plugin is installed
-        run: |
-          gke-gcloud-auth-plugin --version
 
       - name: Set Image Tag in Kustomization
         run: |
