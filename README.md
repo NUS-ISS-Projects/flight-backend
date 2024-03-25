@@ -23,4 +23,4 @@ The **Flight Fee Comparer App** is an innovative tool designed to help travelers
 - **Deployment:** Dockerized application, deployable on platforms like GKE, AWS
 
 ## License
-This project is licensed under the MIT License - see the **LICENSE** file for details.
+This project is licensed under the Apache License Version 2.0 - see the **LICENSE** file for details.
