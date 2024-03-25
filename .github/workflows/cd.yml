@@ -57,8 +57,8 @@ jobs:
           IMAGE_TAG: ${{ github.ref_name }}
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          docker build --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
-          docker push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}      
+          docker build --tag ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }} .
+          docker push ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}   
 
   deploy-to-gke:
     needs: build-docker-image
