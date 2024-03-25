@@ -66,17 +66,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup GCP
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCLOUD_AUTH }}
-          export_default_credentials: true
+      - name: Setup GCP SDK
+        uses: google-github-actions/setup-gcloud@latest
 
-      - name: Activate GCP Service Account
-        run: |
-          echo "${{ secrets.GCLOUD_AUTH }}" | base64 --decode > gcp-key.json
-          gcloud auth activate-service-account --key-file=gcp-key.json
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          credentials_json: ${{ secrets.GCLOUD_AUTH }}
 
       - name: Get GKE credentials
         run: |
@@ -84,7 +80,7 @@ jobs:
 
       - name: Install kustomize
         run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
 
       - name: Set Image Tag in Kustomization
