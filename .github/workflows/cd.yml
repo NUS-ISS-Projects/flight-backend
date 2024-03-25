@@ -8,9 +8,9 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend:latest
-#   PROJECT_ID: ${{ secrets.PROJECT_ID }}
-#   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
-#   GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
 
 jobs:
   setup-build-deploy:
@@ -60,17 +60,17 @@ jobs:
           docker build --tag $IMAGE_NAME .
           docker push $IMAGE_NAME          
 
-#   deploy-to-gke:
-#     needs: build-docker-image
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@master
-#       - name: kubectl - Google Cloud GKE cluster.
-#         uses: ameydev/gke-kubectl-action@master
-#         env:
-#           PROJECT_ID: ${{ secrets.PROJECT_ID }}
-#           APPLICATION_CREDENTIALS: ${{ secrets.GCLOUD_AUTH }}
-#           CLUSTER_NAME: ${{ secrets.GKE_CLUSTER }}
-#           ZONE_NAME: ${{ secrets.GKE_ZONE }}
-#         with:
-#           args: apply -f k8s/
+  deploy-to-gke:
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: kubectl - Google Cloud GKE cluster.
+        uses: ameydev/gke-kubectl-action@master
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          APPLICATION_CREDENTIALS: ${{ secrets.GCLOUD_AUTH }}
+          CLUSTER_NAME: ${{ secrets.GKE_CLUSTER }}
+          ZONE_NAME: ${{ secrets.GKE_ZONE }}
+        with:
+          args: apply -f k8s/
