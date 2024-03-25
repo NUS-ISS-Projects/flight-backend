@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class FlightsearchApplication {
 
 	public static void main(String[] args) {
-		System.exit(1); // Non-zero exit code indicates error
 		SpringApplication.run(FlightsearchApplication.class, args);
 	}
 
