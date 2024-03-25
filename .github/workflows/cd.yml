@@ -7,7 +7,7 @@ on:
       branches: [ "main" ]
 
 env:
-  IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightBackend:latest
+  IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend:latest
 #   PROJECT_ID: ${{ secrets.PROJECT_ID }}
 #   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
 #   GKE_ZONE: ${{ secrets.GKE_ZONE }}
