@@ -113,4 +113,9 @@ public class FlightController {
         FlightOfferSearch[] flights = this.amadeusConnect.flights(origin, destination, departDate, adults,children, travelClass, returnDate);
         return new ResponseEntity<>(flights, HttpStatus.OK);
     }
+
+    @GetMapping("/hello")
+    public ResponseEntity<String> hello() {
+        return new ResponseEntity<>("Hello World!", HttpStatus.OK);
+    }
 }

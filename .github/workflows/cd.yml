@@ -14,7 +14,7 @@ env:
 
 jobs:
   setup-build-deploy:
-    name: Setup, Build, and Deploy
+    name: Setup, Build, and Store Artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
           name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
   build-docker-image:
-    name: build-docker
+    name: Dockerize and push to GitHub Container Registry
     needs: setup-build-deploy
     runs-on: ubuntu-latest
     permissions:
