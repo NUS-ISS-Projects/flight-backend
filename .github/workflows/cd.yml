@@ -6,7 +6,8 @@ on:
       - 'v*'
 
 env:
-  IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend:latest
+  IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+  IMAGE_TAG: ${{ github.ref_name }}
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
@@ -54,11 +55,10 @@ jobs:
         env:
           USERNAME: ${{ secrets.GITHUB_USERNAME }}
           PASSWORD: ${{ secrets.GITHUB_PASSWORD }}
-          IMAGE_TAG: ${{ github.ref_name }}
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          docker build --tag ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }} .
-          docker push ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}   
+          docker build --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}   
 
   deploy-to-gke:
     needs: build-docker-image
