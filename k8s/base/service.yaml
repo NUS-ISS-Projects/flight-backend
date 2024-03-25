@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flight-application-service
+spec:
+  selector:
+    app: flight-application
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+  type: LoadBalancer

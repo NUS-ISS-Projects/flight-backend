@@ -1,0 +1,5 @@
+resources:
+  - ../../base
+images:
+  - name: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+    newTag: latest  # Placeholder, to be dynamically replaced in CI/CD pipeline

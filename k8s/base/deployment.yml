@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight-application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flight-application
+  template:
+    metadata:
+      labels:
+        app: flight-application
+    spec:
+      containers:
+        - name: flight-application
+          image: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+          ports:
+            - containerPort: 8888
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
