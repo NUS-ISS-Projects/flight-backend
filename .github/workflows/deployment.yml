@@ -47,10 +47,10 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          USERNAME: ${{ secrets.GHCR_USERNAME }}
-          PASSWORD: ${{ secrets.GHCR_PASSWORD }}
+          USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          PASSWORD: ${{ secrets.GITHUB_PASSWORD }}
         run: |
-          docker login ghcr.io -u $GHCR_USERNAME --password-stdin <<< $GHCR_PASSWORD
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           docker build --tag $IMAGE_NAME .
           docker push $IMAGE_NAME          
 
