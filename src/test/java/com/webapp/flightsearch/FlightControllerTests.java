@@ -82,9 +82,5 @@ class FlightControllerTests {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1));
     }
-
-    @Test
-    public void test() throws Exception {
-    }
 }
 
