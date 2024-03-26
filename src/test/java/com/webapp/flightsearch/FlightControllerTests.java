@@ -85,7 +85,6 @@ class FlightControllerTests {
 
     @Test
     public void test() throws Exception {
-        assertTrue(true);
     }
 }
 
