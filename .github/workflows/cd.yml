@@ -3,7 +3,7 @@ name: Docker Build and Deploy to GKE
 on:
   push:
     tags:
-      - 'v*'
+      - '*-release'
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
