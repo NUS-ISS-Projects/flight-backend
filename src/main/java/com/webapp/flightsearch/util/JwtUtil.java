@@ -10,15 +10,24 @@ import java.util.Date;
 
 public class JwtUtil {
     private static String jwtSecret = "FlightSecretKey"; // Replace with your secret key
-    private static  int jwtExpirationMs = 86400000; // Token validity in milliseconds
+    private static int jwtExpirationMs = 86400000; // Token validity in milliseconds
 
     public static String generateJwtToken(Authentication authentication) {
-        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String username;
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        } else {
+            throw new IllegalArgumentException("Authentication principal is not of expected type");
+        }
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
+                .setSubject(username)
                 .setIssuedAt(new Date())
-//                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                // .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
