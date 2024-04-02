@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set build date as image tag
-        run: echo "IMAGE_TAG=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "IMAGE_TAG=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Retrieve saved jar
         uses: actions/download-artifact@v2
