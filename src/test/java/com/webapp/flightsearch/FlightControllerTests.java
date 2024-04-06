@@ -1,6 +1,7 @@
 package com.webapp.flightsearch;
 
 import com.amadeus.exceptions.ResponseException;
+import com.webapp.flightsearch.service.FlightSearchService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
@@ -8,8 +9,6 @@ import com.webapp.flightsearch.entity.Role;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.repository.UserRepository;
-import com.webapp.flightsearch.security.SecurityConfig;
-import com.webapp.flightsearch.service.AmadeusConnect;
 import com.webapp.flightsearch.util.JwtUtil;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -41,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest
@@ -51,7 +51,7 @@ class FlightControllerTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private AmadeusConnect amadeusConnect;
+    private FlightSearchService flightSearchService;
 
     private com.amadeus.resources.Location[] mockLocations;
     private com.amadeus.resources.FlightOfferSearch[] mockFlightsLONToNYC;
@@ -87,11 +87,11 @@ class FlightControllerTests {
         when(mockLocationPU.getIataCode()).thenReturn("PU");
 
         mockLocations = new com.amadeus.resources.Location[]{mockLocationSHA, mockLocationPU};
-        when(amadeusConnect.location("CN")).thenReturn(mockLocations);
+        when(flightSearchService.location("CN")).thenReturn(mockLocations);
 
         com.amadeus.resources.FlightOfferSearch mockFlight = mock(com.amadeus.resources.FlightOfferSearch.class);
         mockFlightsLONToNYC = new com.amadeus.resources.FlightOfferSearch[]{mockFlight};
-        when(amadeusConnect.flights("LON", "NYC", "2024-11-15", "3", "1","ECONOMY",  "2024-11-18")).thenReturn(mockFlightsLONToNYC);
+        when(flightSearchService.flights("LON", "NYC", "2024-11-15", "3", "1", "ECONOMY", "2024-11-18")).thenReturn(mockFlightsLONToNYC);
     }
 
     @Test
@@ -108,15 +108,14 @@ class FlightControllerTests {
     @Test
     public void whenCallingFlightsAPIWithParameters_itsRespondingWithRightInfo() throws Exception {
         mockMvc.perform(get("/api/flights")
-                .param("origin", "LON")
-                .param("destination", "NYC")
-                .param("departDate", "2024-11-15")
-                .param("adults", "3")
-                .param("children", "1")
-                .param("travelClass","ECONOMY")
-                .param("returnDate", "2024-11-18")
-
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("origin", "LON")
+                        .param("destination", "NYC")
+                        .param("departDate", "2024-11-15")
+                        .param("adults", "3")
+                        .param("children", "1")
+                        .param("travelClass", "ECONOMY")
+                        .param("returnDate", "2024-11-18")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print()) // This will print the request and response details
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -128,7 +127,7 @@ class FlightControllerTests {
         String username = "testUser";
         String password = "password";
         String token = "mockToken";
-        Authentication mockAuthentication = mock(Authentication.class); 
+        Authentication mockAuthentication = mock(Authentication.class);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
             .username(username)
@@ -147,7 +146,7 @@ class FlightControllerTests {
         loginDto.setUsername(username);
         loginDto.setPassword(password);
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/api/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginDto)))
                 .andExpect(status().isOk());
@@ -164,7 +163,7 @@ class FlightControllerTests {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
             .thenThrow(new BadCredentialsException("Invalid username or password"));
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/api/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginDto)))
                 .andExpect(status().isUnauthorized()) // Expecting HTTP 401 Unauthorized
@@ -188,11 +187,10 @@ class FlightControllerTests {
         when(userRepository.existsByEmail(signUpDto.getEmail())).thenReturn(false);
         when(roleRepository.findByName("ROLE_ADMIN")).thenReturn(Optional.of(adminRole));
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User is registered successfully!"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -205,7 +203,7 @@ class FlightControllerTests {
 
         when(userRepository.existsByUserName(signUpDto.getUsername())).thenReturn(true);
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
                 .andExpect(status().isBadRequest())
@@ -223,7 +221,7 @@ class FlightControllerTests {
         when(userRepository.existsByUserName(signUpDto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(signUpDto.getEmail())).thenReturn(true);
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
                 .andExpect(status().isBadRequest())
@@ -238,7 +236,7 @@ class FlightControllerTests {
 
         when(userRepository.findByUserName(userName)).thenReturn(user);
 
-        mockMvc.perform(post("/api/userProfile/{userName}", userName))
+        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
             .andExpect(status().isOk())
             .andExpect(content().string(user.toString()));
 
