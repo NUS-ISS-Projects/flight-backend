@@ -41,8 +41,6 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     private UserDetail userDetail;
-    @Autowired
-    private Firestore firestore;
 
     @PostMapping("/login")
     public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {

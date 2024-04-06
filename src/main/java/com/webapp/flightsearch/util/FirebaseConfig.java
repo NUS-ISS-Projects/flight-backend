@@ -31,7 +31,7 @@ public class FirebaseConfig {
             // Handle IO exception
             e.printStackTrace();
         }
-
         return FirestoreClient.getFirestore();
     }
+
 }
