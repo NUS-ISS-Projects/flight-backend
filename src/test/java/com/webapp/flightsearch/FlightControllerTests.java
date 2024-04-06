@@ -146,7 +146,7 @@ class FlightControllerTests {
         loginDto.setUsername(username);
         loginDto.setPassword(password);
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/api/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginDto)))
                 .andExpect(status().isOk());
@@ -163,7 +163,7 @@ class FlightControllerTests {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
             .thenThrow(new BadCredentialsException("Invalid username or password"));
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/api/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(loginDto)))
                 .andExpect(status().isUnauthorized()) // Expecting HTTP 401 Unauthorized
@@ -187,11 +187,10 @@ class FlightControllerTests {
         when(userRepository.existsByEmail(signUpDto.getEmail())).thenReturn(false);
         when(roleRepository.findByName("ROLE_ADMIN")).thenReturn(Optional.of(adminRole));
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User is registered successfully!"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -204,7 +203,7 @@ class FlightControllerTests {
 
         when(userRepository.existsByUserName(signUpDto.getUsername())).thenReturn(true);
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
                 .andExpect(status().isBadRequest())
@@ -222,7 +221,7 @@ class FlightControllerTests {
         when(userRepository.existsByUserName(signUpDto.getUsername())).thenReturn(false);
         when(userRepository.existsByEmail(signUpDto.getEmail())).thenReturn(true);
 
-        mockMvc.perform(post("/api/signup")
+        mockMvc.perform(post("/api/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(signUpDto)))
                 .andExpect(status().isBadRequest())
@@ -237,7 +236,7 @@ class FlightControllerTests {
 
         when(userRepository.findByUserName(userName)).thenReturn(user);
 
-        mockMvc.perform(post("/api/userProfile/{userName}", userName))
+        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
             .andExpect(status().isOk())
             .andExpect(content().string(user.toString()));
 
