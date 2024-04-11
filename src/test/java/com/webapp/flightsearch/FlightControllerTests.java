@@ -10,6 +10,8 @@ import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.repository.UserRepository;
 import com.webapp.flightsearch.util.JwtUtil;
+import com.webapp.flightsearch.dto.BookmarkDto;
+import com.webapp.flightsearch.service.UserDetail;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -37,6 +41,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,6 +73,9 @@ class FlightControllerTests {
 
     @MockBean
     private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private UserDetail userDetail;
 
     private String asJsonString(final Object obj) {
         try {
@@ -248,5 +257,44 @@ class FlightControllerTests {
         mockMvc.perform(get("/api/health"))
             .andExpect(status().isOk())
             .andExpect(content().string("Health OK"));
+    }
+
+    @Test
+    @WithMockUser(username="admin", roles={"USER"})
+    public void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
+        String username = "admin";
+        BookmarkDto bookmarkDto = new BookmarkDto(1, "FL123");
+
+        doNothing().when(userDetail).bookmarkFlight(username, bookmarkDto);
+
+        mockMvc.perform(post("/api/user/{userName}/bookmark", username)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(bookmarkDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
+                .andExpect(jsonPath("$.bookmark.id").value(bookmarkDto.getId()))
+                .andExpect(jsonPath("$.bookmark.flightNumber").value(bookmarkDto.getFlightNumber()));
+    }
+
+    @Test
+    @WithMockUser(username="admin", roles={"USER"})
+    public void getBookmarks_ShouldReturnListOfBookmarks() throws Exception {
+        String username = "admin";
+        List<BookmarkDto> bookmarks = Arrays.asList(
+            new BookmarkDto(1, "FL123"),
+            new BookmarkDto(2, "FL456")
+        );
+
+        // Mock the service call to return the list of bookmarks
+        when(userDetail.getFlightBookmarks(username)).thenReturn(bookmarks);
+
+        // Perform the GET request and verify the response
+        mockMvc.perform(get("/api/user/{userName}/bookmarks", username)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(bookmarks.get(0).getId()))
+                .andExpect(jsonPath("$[0].flightNumber").value(bookmarks.get(0).getFlightNumber()))
+                .andExpect(jsonPath("$[1].id").value(bookmarks.get(1).getId()))
+                .andExpect(jsonPath("$[1].flightNumber").value(bookmarks.get(1).getFlightNumber()));
     }
 }
