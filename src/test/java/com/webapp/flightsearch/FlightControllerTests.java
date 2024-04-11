@@ -104,7 +104,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void whenCallingLocationAPIWithCountryCode_itsRespondingWithRightNumberOfAirportsAssiociated() throws Exception {
+    void whenCallingLocationAPIWithCountryCode_itsRespondingWithRightNumberOfAirportsAssiociated() throws Exception {
         mockMvc.perform(get("/api/locations")
                 .param("keyword", "CN")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -115,7 +115,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void whenCallingFlightsAPIWithParameters_itsRespondingWithRightInfo() throws Exception {
+    void whenCallingFlightsAPIWithParameters_itsRespondingWithRightInfo() throws Exception {
         mockMvc.perform(get("/api/flights")
                         .param("origin", "LON")
                         .param("destination", "NYC")
@@ -132,7 +132,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void authenticateUser_Success() throws Exception {
+    void authenticateUser_Success() throws Exception {
         String username = "testUser";
         String password = "password";
         String token = "mockToken";
@@ -162,7 +162,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void authenticateUser_Failure() throws Exception {
+    void authenticateUser_Failure() throws Exception {
         String username = "wrongUser";
         String password = "wrongPassword";
         LoginDto loginDto = new LoginDto();
@@ -182,7 +182,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_Success() throws Exception {
+    void registerUser_Success() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("testUsername");
@@ -203,7 +203,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_UsernameExists() throws Exception {
+    void registerUser_UsernameExists() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("existingUsername");
@@ -220,7 +220,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_EmailExists() throws Exception {
+    void registerUser_EmailExists() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("testUsername");
@@ -238,7 +238,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void getUserProfile_UserFound() throws Exception {
+    void getUserProfile_UserFound() throws Exception {
         String userName = "existingUser";
         User user = new User();
         user.setUserName(userName);
@@ -253,7 +253,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void healthCheck_ReturnsOk() throws Exception {
+    void healthCheck_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/health"))
             .andExpect(status().isOk())
             .andExpect(content().string("Health OK"));
@@ -261,7 +261,7 @@ class FlightControllerTests {
 
     @Test
     @WithMockUser(username="admin", roles={"USER"})
-    public void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
+    void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
         String username = "admin";
         BookmarkDto bookmarkDto = new BookmarkDto(1, "FL123");
 
@@ -278,7 +278,7 @@ class FlightControllerTests {
 
     @Test
     @WithMockUser(username="admin", roles={"USER"})
-    public void getBookmarks_ShouldReturnListOfBookmarks() throws Exception {
+    void getBookmarks_ShouldReturnListOfBookmarks() throws Exception {
         String username = "admin";
         List<BookmarkDto> bookmarks = Arrays.asList(
             new BookmarkDto(1, "FL123"),
