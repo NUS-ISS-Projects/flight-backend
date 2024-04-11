@@ -41,7 +41,7 @@ public class FlightSearchController {
         return new ResponseEntity<>(flights, HttpStatus.OK);
     }
     @GetMapping("/health")
-    public ResponseEntity<?> health() {
+    public ResponseEntity<String> health() {
         return new ResponseEntity<>("Health OK", HttpStatus.OK);
     }
 }

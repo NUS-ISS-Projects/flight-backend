@@ -82,7 +82,7 @@ public class UserController {
     }
 
     @PostMapping("/{userName}/bookmark")
-    public ResponseEntity<?> bookmarkFlight(@PathVariable String userName, @RequestBody BookmarkDto bookMark) {
+    public ResponseEntity<Map<String, Object>> bookmarkFlight(@PathVariable String userName, @RequestBody BookmarkDto bookMark) {
         userDetail.bookmarkFlight(userName, bookMark);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Bookmark added successfully!");
