@@ -3,6 +3,8 @@ name: Build with Maven and Perform Unit Tests, Code Coverage and Static Analysis
 on:
   push:
   pull_request:
+    branches:
+      - 'main'
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
