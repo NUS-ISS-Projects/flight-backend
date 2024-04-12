@@ -1,12 +1,13 @@
 package com.webapp.flightsearch.util;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import com.google.cloud.firestore.Firestore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class FirebaseConfig {
         // Path to your Firebase Admin SDK JSON file
         try {
             FileInputStream serviceAccount = new FileInputStream(
-                    "C:\\Users\\princ\\NUS_ISS\\flight-backend\\firebase-cred.json");
+                    "C:\\Users\\mummy\\OneDrive\\Desktop\\Projects\\skyScout\\flight-backend\\firebase-cred.json");
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();

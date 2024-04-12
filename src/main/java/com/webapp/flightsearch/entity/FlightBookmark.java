@@ -1,9 +1,6 @@
 package com.webapp.flightsearch.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @SuppressWarnings("ALL")
 @Entity
@@ -12,13 +9,20 @@ public class FlightBookmark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String userName;
-    private String flightNumber;
     private String tripType;
+    private String noOfAdults;
+    private String noOfChildren;
     private String cabinClass;
-    private String originAirportName;
-    private String returnAirportName;
-    private String deperatureDate;
-    private String returnDate;
+    private String route;
+    private String price;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "departure_details_id", referencedColumnName = "id")
+    private JourneyDetails departureDetails;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "return_details_id", referencedColumnName = "id")
+    private JourneyDetails returnDetails;
 
 
     public Integer getId() {
@@ -38,12 +42,67 @@ public class FlightBookmark {
         this.userName = userName;
     }
 
-    /* Flight Number */
-    public String getFlightNumber() {
-        return flightNumber;
+    public String getTripType() {
+        return tripType;
     }
 
-    public void setFlightNumber(String flightNumber) {
-        this.flightNumber = flightNumber;
+    public void setTripType(String tripType) {
+        this.tripType = tripType;
+    }
+
+    public String getNoOfAdults() {
+        return noOfAdults;
+    }
+
+    public void setNoOfAdults(String noOfAdults) {
+        this.noOfAdults = noOfAdults;
+    }
+
+    public String getNoOfChildren() {
+        return noOfChildren;
+    }
+
+    public void setNoOfChildren(String noOfChildren) {
+        this.noOfChildren = noOfChildren;
+    }
+
+    public String getCabinClass() {
+        return this.cabinClass;
+    }
+
+    public void setCabinClass(String cabinClass) {
+        this.cabinClass = cabinClass;
+    }
+
+    public String getRoute() {
+        return this.route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
+    }
+
+    public String getPrice() {
+        return this.price;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
+    }
+
+    public JourneyDetails getDepartureDetails() {
+        return departureDetails;
+    }
+
+    public void setDepartureDetails(JourneyDetails departureDetails) {
+        this.departureDetails = departureDetails;
+    }
+
+    public JourneyDetails getReturnDetails() {
+        return returnDetails;
+    }
+
+    public void setReturnDetails(JourneyDetails returnDetails) {
+        this.returnDetails = returnDetails;
     }
 }

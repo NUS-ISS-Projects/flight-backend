@@ -24,9 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UserDetailTests {
 
@@ -99,15 +97,15 @@ class UserDetailTests {
         FlightBookmark flightBookmark2 = new FlightBookmark();
 
         flightBookmark1.setId(1);
-        flightBookmark1.setFlightNumber("FL123");
+//        flightBookmark1.setFlightNumber("FL123");
         flightBookmark1.setUserName(userName);
         flightBookmark2.setId(2);
-        flightBookmark2.setFlightNumber("FL456");
+//        flightBookmark2.setFlightNumber("FL456");
         flightBookmark2.setUserName(userName);
 
         List bookmarks = Arrays.asList(
-            flightBookmark1,
-            flightBookmark2
+                flightBookmark1,
+                flightBookmark2
         );
 
         when(flightBookmarkRepository.findByUserName(userName)).thenReturn(bookmarks);
@@ -118,8 +116,8 @@ class UserDetailTests {
         // Assert
         verify(flightBookmarkRepository, times(1)).findByUserName(userName);
         assertEquals(2, result.size());
-        assertEquals("FL123", result.get(0).getFlightNumber());
-        assertEquals("FL456", result.get(1).getFlightNumber());
+//        assertEquals("FL123", result.get(0).getFlightNumber());
+//        assertEquals("FL456", result.get(1).getFlightNumber());
     }
 
     @Test
@@ -145,7 +143,7 @@ class UserDetailTests {
         verify(passwordEncoder, times(1)).encode(signUpDto.getPassword());
         verify(roleRepository, times(1)).findByName("ROLE_ADMIN");
         verify(userRepository, times(1)).save(any(User.class));
-        
+
         assertNotNull(savedUser);
         assertEquals(signUpDto.getName(), savedUser.getName());
         assertEquals(signUpDto.getUsername(), savedUser.getUserName());
