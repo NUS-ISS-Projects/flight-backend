@@ -20,6 +20,17 @@ spec:
       containers:
         - name: flight-application
           image: ghcr.io/nus-iss-projects/flight-backend/flightbackend  # Ensure this image tag is updated in your CI/CD pipeline
+          env:
+            - name: AMADEUS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: amadeus-api-secrets
+                  key: amadeus-api-key
+            - name: AMADEUS_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: amadeus-api-secrets
+                  key: amadeus-api-secret
           ports:
             - containerPort: 8888
           readinessProbe:  # Define a readiness probe to check if your application is ready to serve traffic
