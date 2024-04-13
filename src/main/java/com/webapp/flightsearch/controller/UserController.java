@@ -90,13 +90,9 @@ public class UserController {
         user.setUserName(userDetails.getUserName());
         user.setName(userDetails.getName());
         user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
-        userRepository.save(user);
+        User updatedUser = userRepository.save(user);
 
-        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore instance
-        FirestoreWriter userWriter = new FirestoreWriter();
-        userWriter.saveUserToFirestore(firestore, user);
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @PostMapping("/{userName}/bookmark")
