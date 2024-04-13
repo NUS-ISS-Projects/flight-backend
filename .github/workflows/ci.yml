@@ -3,9 +3,13 @@ name: Build with Maven and Perform Unit Tests, Code Coverage and Static Analysis
 on:
   push:
   pull_request:
+    branches:
+      - 'main'
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+  AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+  AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
 
 jobs:
   build:
