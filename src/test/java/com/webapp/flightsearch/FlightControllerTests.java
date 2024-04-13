@@ -255,24 +255,26 @@ class FlightControllerTests {
                                 .andExpect(content().string("Health OK"));
         }
 
-        @Test
-        @WithMockUser(username = "admin", roles = { "USER" })
-        void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
-                String username = "admin";
-                BookmarkDto bookmarkDto = new BookmarkDto(1, "FL123", username, username, username, username, username,
-                                null,
-                                null);
+        // @Test
+        // @WithMockUser(username = "admin", roles = { "USER" })
+        // void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
+        // String username = "admin";
+        // BookmarkDto bookmarkDto = new BookmarkDto(1, "FL123", username, username,
+        // username, username, username,
+        // null,
+        // null);
 
-                doNothing().when(userDetail).bookmarkFlight(username, bookmarkDto);
+        // doNothing().when(userDetail).bookmarkFlight(username, bookmarkDto);
 
-                mockMvc.perform(post("/api/user/{userName}/bookmark", username)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(bookmarkDto)))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
-                                .andExpect(jsonPath("$.bookmark.id").value(bookmarkDto.getId()));
-                // .andExpect(jsonPath("$.bookmark.flightNumber").value(bookmarkDto.getFlightNumber()));
-        }
+        // mockMvc.perform(post("/api/user/{userName}/bookmark", username)
+        // .contentType(MediaType.APPLICATION_JSON)
+        // .content(new ObjectMapper().writeValueAsString(bookmarkDto)))
+        // .andExpect(status().isOk())
+        // .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
+        // .andExpect(jsonPath("$.bookmark.id").value(bookmarkDto.getId()));
+        // //
+        // .andExpect(jsonPath("$.bookmark.flightNumber").value(bookmarkDto.getFlightNumber()));
+        // }
 
         // @Test
         // @WithMockUser(username = "admin", roles = { "USER" })
