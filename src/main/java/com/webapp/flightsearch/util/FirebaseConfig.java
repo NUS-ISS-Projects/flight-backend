@@ -36,6 +36,7 @@ public class FirebaseConfig {
         String filePath = currentDirectory + File.separator + "app" + File.separator + "google-services.json";
 
         try {
+            System.out.println(filePath);
             FileInputStream serviceAccount = new FileInputStream(filePath);
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
