@@ -17,6 +17,10 @@ import java.util.Map;
 public class FirestoreWriter {
 
     public void saveUserToFirestore(Firestore firestore, User user) {
+        if (user == null) {
+            // Handle the case where user is null, maybe log an error or throw an exception
+            return;
+        }
         try {
             Map<String, Object> userMap = new HashMap<>();
             userMap.put("name", user.getName());
