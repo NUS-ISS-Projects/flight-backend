@@ -27,9 +27,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
       - name: Retreive firebase credentials
-        run: | 
-          echo $DATA | base64 -di > app/google-services.json    
-          cat app/google-services.json   
+        run: echo $DATA | base64 -di > app/google-services.json    
       - run: mvn clean install --batch-mode --errors --fail-at-end
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
