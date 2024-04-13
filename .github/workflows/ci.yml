@@ -90,6 +90,13 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: 17
+      - name: Retrieve firebase credentials
+        run: |
+          echo $DATA | base64 -di > app/google-services.json
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi    
       - run: mvn clean install --batch-mode --errors --fail-at-end
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
