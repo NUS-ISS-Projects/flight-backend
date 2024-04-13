@@ -15,9 +15,20 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
+
+    private static boolean firebaseInitialized = false;
+
     @Bean
     public Firestore firestore() throws IOException {
-        // Path to your Firebase Admin SDK JSON file
+        if (!firebaseInitialized) {
+            // Initialize FirebaseApp only if it hasn't been initialized before
+            initializeFirebaseApp();
+            firebaseInitialized = true;
+        }
+        return FirestoreClient.getFirestore();
+    }
+
+    private void initializeFirebaseApp() throws IOException {
         // Get the current working directory
         String currentDirectory = System.getProperty("user.dir");
 
@@ -25,8 +36,7 @@ public class FirebaseConfig {
         String filePath = currentDirectory + File.separator + "app" + File.separator + "google-services.json";
 
         try {
-            FileInputStream serviceAccount = new FileInputStream(
-                    filePath);
+            FileInputStream serviceAccount = new FileInputStream(filePath);
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
@@ -39,7 +49,5 @@ public class FirebaseConfig {
             // Handle IO exception
             e.printStackTrace();
         }
-        return FirestoreClient.getFirestore();
     }
-
 }
