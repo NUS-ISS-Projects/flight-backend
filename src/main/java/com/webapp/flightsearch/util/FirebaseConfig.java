@@ -30,13 +30,14 @@ public class FirebaseConfig {
 
     private void initializeFirebaseApp() throws IOException {
         // Get the current working directory
-        String currentDirectory = System.getProperty("user.dir");
+        // String currentDirectory = System.getProperty("user.dir");
 
-        // Construct the file path relative to the current working directory
-        String filePath = currentDirectory + File.separator + "app" + File.separator + "google-services.json";
-
+        // // Construct the file path relative to the current working directory
+        // String filePath = currentDirectory + File.separator + "app" + File.separator
+        // + "google-services.json";
+        String filePath = "app/google-services.json";
         try {
-            System.out.println(filePath);
+            System.out.println("Attempting to load file from: " + filePath);
             FileInputStream serviceAccount = new FileInputStream(filePath);
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -45,9 +46,11 @@ public class FirebaseConfig {
             System.out.println("Firebase application initialized");
         } catch (FileNotFoundException error) {
             // Handle file not found error
-            error.printStackTrace();
+            System.err.println("File not found: " + error.getMessage());
         } catch (IOException e) {
             // Handle IO exception
+            System.err.println("IOException: " + e.getMessage());
+            // Handle other IO exceptions
             e.printStackTrace();
         }
     }
