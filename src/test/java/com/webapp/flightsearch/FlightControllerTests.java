@@ -1,16 +1,17 @@
 package com.webapp.flightsearch;
 
 import com.amadeus.exceptions.ResponseException;
-import com.webapp.flightsearch.service.FlightSearchService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.Role;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.repository.UserRepository;
+import com.webapp.flightsearch.service.FlightSearchService;
+import com.webapp.flightsearch.service.UserDetail;
 import com.webapp.flightsearch.util.JwtUtil;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,27 +22,24 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -68,6 +66,9 @@ class FlightControllerTests {
     @MockBean
     private PasswordEncoder passwordEncoder;
 
+    @MockBean
+    private UserDetail userDetail;
+
     private String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
@@ -86,16 +87,17 @@ class FlightControllerTests {
         when(mockLocationPU.getName()).thenReturn("PUDONG INTL");
         when(mockLocationPU.getIataCode()).thenReturn("PU");
 
-        mockLocations = new com.amadeus.resources.Location[]{mockLocationSHA, mockLocationPU};
+        mockLocations = new com.amadeus.resources.Location[] { mockLocationSHA, mockLocationPU };
         when(flightSearchService.location("CN")).thenReturn(mockLocations);
 
         com.amadeus.resources.FlightOfferSearch mockFlight = mock(com.amadeus.resources.FlightOfferSearch.class);
-        mockFlightsLONToNYC = new com.amadeus.resources.FlightOfferSearch[]{mockFlight};
-        when(flightSearchService.flights("LON", "NYC", "2024-11-15", "3", "1", "ECONOMY", "2024-11-18")).thenReturn(mockFlightsLONToNYC);
+        mockFlightsLONToNYC = new com.amadeus.resources.FlightOfferSearch[] { mockFlight };
+        when(flightSearchService.flights("LON", "NYC", "2024-11-15", "3", "1", "ECONOMY", "2024-11-18"))
+                .thenReturn(mockFlightsLONToNYC);
     }
 
     @Test
-    public void whenCallingLocationAPIWithCountryCode_itsRespondingWithRightNumberOfAirportsAssiociated() throws Exception {
+    void whenCallingLocationAPIWithCountryCode_itsRespondingWithRightNumberOfAirportsAssiociated() throws Exception {
         mockMvc.perform(get("/api/locations")
                 .param("keyword", "CN")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -106,16 +108,16 @@ class FlightControllerTests {
     }
 
     @Test
-    public void whenCallingFlightsAPIWithParameters_itsRespondingWithRightInfo() throws Exception {
+    void whenCallingFlightsAPIWithParameters_itsRespondingWithRightInfo() throws Exception {
         mockMvc.perform(get("/api/flights")
-                        .param("origin", "LON")
-                        .param("destination", "NYC")
-                        .param("departDate", "2024-11-15")
-                        .param("adults", "3")
-                        .param("children", "1")
-                        .param("travelClass", "ECONOMY")
-                        .param("returnDate", "2024-11-18")
-                        .contentType(MediaType.APPLICATION_JSON))
+                .param("origin", "LON")
+                .param("destination", "NYC")
+                .param("departDate", "2024-11-15")
+                .param("adults", "3")
+                .param("children", "1")
+                .param("travelClass", "ECONOMY")
+                .param("returnDate", "2024-11-18")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print()) // This will print the request and response details
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -123,22 +125,22 @@ class FlightControllerTests {
     }
 
     @Test
-    public void authenticateUser_Success() throws Exception {
+    void authenticateUser_Success() throws Exception {
         String username = "testUser";
         String password = "password";
         String token = "mockToken";
         Authentication mockAuthentication = mock(Authentication.class);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-            .username(username)
-            .password(password)
-            .authorities(new SimpleGrantedAuthority("ROLE_USER"))
-            .build();
+                .username(username)
+                .password(password)
+                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                .build();
 
         when(mockAuthentication.getPrincipal()).thenReturn(userDetails);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .thenReturn(mockAuthentication);
+                .thenReturn(mockAuthentication);
 
         when(JwtUtil.generateJwtToken(mockAuthentication)).thenReturn(token);
 
@@ -153,7 +155,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void authenticateUser_Failure() throws Exception {
+    void authenticateUser_Failure() throws Exception {
         String username = "wrongUser";
         String password = "wrongPassword";
         LoginDto loginDto = new LoginDto();
@@ -161,7 +163,7 @@ class FlightControllerTests {
         loginDto.setPassword(password);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .thenThrow(new BadCredentialsException("Invalid username or password"));
+                .thenThrow(new BadCredentialsException("Invalid username or password"));
 
         mockMvc.perform(post("/api/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +175,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_Success() throws Exception {
+    void registerUser_Success() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("testUsername");
@@ -194,7 +196,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_UsernameExists() throws Exception {
+    void registerUser_UsernameExists() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("existingUsername");
@@ -211,7 +213,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void registerUser_EmailExists() throws Exception {
+    void registerUser_EmailExists() throws Exception {
         SignUpDto signUpDto = new SignUpDto();
         signUpDto.setName("testName");
         signUpDto.setUsername("testUsername");
@@ -229,7 +231,7 @@ class FlightControllerTests {
     }
 
     @Test
-    public void getUserProfile_UserFound() throws Exception {
+    void getUserProfile_UserFound() throws Exception {
         String userName = "existingUser";
         User user = new User();
         user.setUserName(userName);
@@ -237,16 +239,55 @@ class FlightControllerTests {
         when(userRepository.findByUserName(userName)).thenReturn(user);
 
         mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
-            .andExpect(status().isOk())
-            .andExpect(content().string(user.toString()));
+                .andExpect(status().isOk())
+                .andExpect(content().string(user.toString()));
 
         verify(userRepository, times(1)).findByUserName(userName);
     }
 
     @Test
-    public void healthCheck_ReturnsOk() throws Exception {
+    void healthCheck_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/health"))
-            .andExpect(status().isOk())
-            .andExpect(content().string("Health OK"));
+                .andExpect(status().isOk())
+                .andExpect(content().string("Health OK"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = { "USER" })
+    void bookmarkFlight_ShouldReturnSuccessMessage() throws Exception {
+        String username = "admin";
+        BookmarkDto bookmarkDto = new BookmarkDto(1, "FL123", username, username, username, username, username, null,
+                null);
+
+        doNothing().when(userDetail).bookmarkFlight(username, bookmarkDto);
+
+        mockMvc.perform(post("/api/user/{userName}/bookmark", username)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(bookmarkDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
+                .andExpect(jsonPath("$.bookmark.id").value(bookmarkDto.getId()));
+        // .andExpect(jsonPath("$.bookmark.flightNumber").value(bookmarkDto.getFlightNumber()));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = { "USER" })
+    void getBookmarks_ShouldReturnListOfBookmarks() throws Exception {
+        String username = "admin";
+        List<BookmarkDto> bookmarks = Arrays.asList(
+                new BookmarkDto(1, "FL123", username, username, username, username, username, null, null),
+                new BookmarkDto(2, "FL456", username, username, username, username, username, null, null));
+
+        // Mock the service call to return the list of bookmarks
+        when(userDetail.getFlightBookmarks(username)).thenReturn(bookmarks);
+
+        // Perform the GET request and verify the response
+        mockMvc.perform(get("/api/user/{userName}/bookmarks", username)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(bookmarks.get(0).getId()))
+                // .andExpect(jsonPath("$[0].flightNumber").value(bookmarks.get(0).getFlightNumber()))
+                .andExpect(jsonPath("$[1].id").value(bookmarks.get(1).getId()));
+        // .andExpect(jsonPath("$[1].flightNumber").value(bookmarks.get(1).getFlightNumber()));
     }
 }
