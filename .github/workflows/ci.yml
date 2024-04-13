@@ -28,6 +28,8 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+    - name: Load Google Service file
+      run: echo $DATA | base64 -di > app/google-services.json    
     - name: Build with Maven
       run: mvn -B package --file pom.xml
     

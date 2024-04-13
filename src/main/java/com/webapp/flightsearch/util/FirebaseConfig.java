@@ -19,7 +19,7 @@ public class FirebaseConfig {
         // Path to your Firebase Admin SDK JSON file
         try {
             FileInputStream serviceAccount = new FileInputStream(
-                    "C:\\Users\\princ\\NUS_ISS\\flight-backend\\firebase-cred.json");
+                    "app/google-services.json");
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
