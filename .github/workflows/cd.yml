@@ -11,6 +11,8 @@ env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+  AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
 
 jobs:
   setup-build-deploy:
@@ -81,12 +83,17 @@ jobs:
       - name: Update kubeconfig to use legacy authentication
         run: |
           kubectl config set-credentials $(kubectl config current-context) --token="$(gcloud auth print-access-token)"
-  
+
+      - name: Create or Update Kubernetes Secret for Amadeus API
+        run: |
+          kubectl get secret amadeus-api-secrets && \
+          kubectl create secret generic amadeus-api-secrets --from-literal=amadeus-api-key=${{ env.AMADEUS_API_KEY }} --from-literal=amadeus-api-secret=${{ env.AMADEUS_API_SECRET }} --dry-run=client -o yaml | kubectl apply -f - || \
+          kubectl create secret generic amadeus-api-secrets --from-literal=amadeus-api-key=${{ env.AMADEUS_API_KEY }} --from-literal=amadeus-api-secret=${{ env.AMADEUS_API_SECRET }}
       - name: Install kustomize
         run: |
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
-  
+        
       - name: Set Image Tag in Kustomization
         run: |
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}

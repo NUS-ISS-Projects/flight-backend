@@ -20,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
@@ -37,6 +38,9 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     private UserDetail userDetail;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {
@@ -75,6 +79,21 @@ public class UserController {
     public ResponseEntity<?> getUserProfile(@PathVariable String userName) {
         User user = userRepository.findByUserName(userName);
         return new ResponseEntity<>(user.toString(), HttpStatus.OK);
+    }
+
+    @PutMapping("/editProfile")
+    public ResponseEntity<?> editProfile(@RequestBody User userDetails) {
+
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userDetails.getId()));
+
+        user.setEmail(userDetails.getEmail());
+        user.setUserName(userDetails.getUserName());
+        user.setName(userDetails.getName());
+        user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        User updatedUser = userRepository.save(user);
+
+        return ResponseEntity.ok(updatedUser);
     }
 
     @PostMapping("/{userName}/bookmark")
