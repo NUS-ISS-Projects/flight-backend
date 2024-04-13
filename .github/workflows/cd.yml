@@ -32,6 +32,8 @@ jobs:
         with:
           name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
+      - name: Retreive firebase credentials
+        run: echo $DATA | base64 -di > app/google-services.json
   build-docker-image:
     name: Dockerize and push to GitHub Container Registry
     needs: setup-build-deploy
