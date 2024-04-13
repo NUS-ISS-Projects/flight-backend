@@ -79,27 +79,41 @@ public class UserController {
     @GetMapping("/userProfile/{userName}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userName) {
         User user = userRepository.findByUserName(userName);
-        return new ResponseEntity<>(user.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping("/editProfile")
-    public ResponseEntity<?> editProfile(@RequestBody User userDetails) {
+    @PutMapping("/editProfile/{userName}")
+    public ResponseEntity<?> editProfile(@PathVariable String userName,
+                                         @RequestBody User userDetails) {
 
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("User not found with id " + userDetails.getId()));
+        User user = userRepository.findByUserName(userName);
 
         user.setEmail(userDetails.getEmail());
         user.setUserName(userDetails.getUserName());
         user.setName(userDetails.getName());
-        user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         User updatedUser = userRepository.save(user);
 
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PutMapping("/change-password/{userName}")
+    public ResponseEntity<?> changePassword(@PathVariable String userName, @RequestBody User passwords) {
+        User user = userRepository.findByUserName(userName);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        boolean matches = passwordEncoder.matches(passwords.getOldPassword(), user.getPassword());
+        if (!matches) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password does not match.");
+        }
+        user.setPassword(passwordEncoder.encode(passwords.getNewPassword()));
+        userRepository.save(user);
+        return ResponseEntity.ok("Password changed successfully.");
+    }
+
     @PostMapping("/{userName}/bookmark")
     public ResponseEntity<Map<String, Object>> bookmarkFlight(@PathVariable String userName,
-            @RequestBody BookmarkDto savedBookmark) {
+                                                              @RequestBody BookmarkDto savedBookmark) {
         System.out.println("Received userName: " + userName);
         System.out.println("Received bookmark details: " + savedBookmark);
         FlightBookmark flightBookmark = userDetail.bookmarkFlight(userName, savedBookmark);
