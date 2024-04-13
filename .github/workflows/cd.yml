@@ -21,8 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Retreive firebase credentials
-        run: echo $DATA | base64 -di > app/google-services.json    
+      - name: Retrieve firebase credentials
+        run: |
+          echo $DATA | base64 -di > app/google-services.json
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi    
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
