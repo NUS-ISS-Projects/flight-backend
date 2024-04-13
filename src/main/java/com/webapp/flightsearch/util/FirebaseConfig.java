@@ -30,7 +30,8 @@ public class FirebaseConfig {
 
     private void initializeFirebaseApp() throws IOException {
         // Get the current working directory
-        // String currentDirectory = System.getProperty("user.dir");
+        String currentDirectory = System.getProperty("user.dir");
+        System.out.println("PWD:" + currentDirectory);
 
         // // Construct the file path relative to the current working directory
         // String filePath = currentDirectory + File.separator + "app" + File.separator
