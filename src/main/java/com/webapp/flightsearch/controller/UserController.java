@@ -68,9 +68,10 @@ public class UserController {
         }
         User user = userDetail.createUser(signUpDto);
 
-        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore instance
-        FirestoreWriter userWriter = new FirestoreWriter();
-        userWriter.saveUserToFirestore(firestore, user);
+        // Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
+        // instance
+        // FirestoreWriter userWriter = new FirestoreWriter();
+        // userWriter.saveUserToFirestore(firestore, user);
 
         return ResponseEntity.ok("User is registered successfully! " + user);
     }
