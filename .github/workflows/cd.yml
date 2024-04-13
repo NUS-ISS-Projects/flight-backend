@@ -55,7 +55,8 @@ jobs:
         with:
           name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
-
+      - name: Copy Firebase credentials file
+        run: echo $DATA | base64 -di > google-services.json   
       - name: List files in target directory
         run: ls target/
 
