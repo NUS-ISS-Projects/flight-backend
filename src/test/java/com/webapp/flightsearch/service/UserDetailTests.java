@@ -69,6 +69,7 @@ class UserDetailTests {
         when(userRepository.findByUserNameOrEmail("testUser", "testUser")).thenReturn(null);
 
         assertThrows(UsernameNotFoundException.class, () -> userDetail.loadUserByUsername("testUser"));
+
     }
 
     // @Test
