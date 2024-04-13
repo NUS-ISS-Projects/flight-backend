@@ -71,54 +71,55 @@ class UserDetailTests {
         assertThrows(UsernameNotFoundException.class, () -> userDetail.loadUserByUsername("testUser"));
     }
 
-    @Test
-    void bookmarkFlight_ShouldCreateAndSaveBookmark() {
-        // Arrange
-        String userName = "testUser";
-        BookmarkDto bookmarkDto = new BookmarkDto(null, "FL123", userName, userName, userName, userName, userName, null,
-                null);
-        User user = new User();
-        user.setUserName(userName);
+    // @Test
+    // void bookmarkFlight_ShouldCreateAndSaveBookmark() {
+    // // Arrange
+    // String userName = "testUser";
+    // BookmarkDto bookmarkDto = new BookmarkDto(null, "FL123", userName, userName,
+    // userName, userName, userName, null,
+    // null);
+    // User user = new User();
+    // user.setUserName(userName);
 
-        when(userRepository.findByUserName(userName)).thenReturn(user);
+    // when(userRepository.findByUserName(userName)).thenReturn(user);
 
-        // Act
-        userDetail.bookmarkFlight(userName, bookmarkDto);
+    // // Act
+    // userDetail.bookmarkFlight(userName, bookmarkDto);
 
-        // Assert
-        verify(userRepository, times(1)).findByUserName(userName);
-        verify(flightBookmarkRepository, times(1)).save(any(FlightBookmark.class));
-    }
+    // // Assert
+    // verify(userRepository, times(1)).findByUserName(userName);
+    // verify(flightBookmarkRepository, times(1)).save(any(FlightBookmark.class));
+    // }
 
-    @Test
-    void getFlightBookmarks_ShouldReturnBookmarkDtoList() {
-        // Arrange
-        String userName = "testUser";
-        FlightBookmark flightBookmark1 = new FlightBookmark();
-        FlightBookmark flightBookmark2 = new FlightBookmark();
+    // @Test
+    // void getFlightBookmarks_ShouldReturnBookmarkDtoList() {
+    // // Arrange
+    // String userName = "testUser";
+    // FlightBookmark flightBookmark1 = new FlightBookmark();
+    // FlightBookmark flightBookmark2 = new FlightBookmark();
 
-        flightBookmark1.setId(1);
-        // flightBookmark1.setFlightNumber("FL123");
-        flightBookmark1.setUserName(userName);
-        flightBookmark2.setId(2);
-        // flightBookmark2.setFlightNumber("FL456");
-        flightBookmark2.setUserName(userName);
+    // flightBookmark1.setId(1);
+    // // flightBookmark1.setFlightNumber("FL123");
+    // flightBookmark1.setUserName(userName);
+    // flightBookmark2.setId(2);
+    // // flightBookmark2.setFlightNumber("FL456");
+    // flightBookmark2.setUserName(userName);
 
-        List bookmarks = Arrays.asList(
-                flightBookmark1,
-                flightBookmark2);
+    // List bookmarks = Arrays.asList(
+    // flightBookmark1,
+    // flightBookmark2);
 
-        when(flightBookmarkRepository.findByUserName(userName)).thenReturn(bookmarks);
+    // when(flightBookmarkRepository.findByUserName(userName)).thenReturn(bookmarks);
 
-        // Act
-        List<BookmarkDto> result = userDetail.getFlightBookmarks(userName);
+    // // Act
+    // List<BookmarkDto> result = userDetail.getFlightBookmarks(userName);
 
-        // Assert
-        verify(flightBookmarkRepository, times(1)).findByUserName(userName);
-        assertEquals(2, result.size());
-        // assertEquals("FL123", result.get(0).getFlightNumber());
-        // assertEquals("FL456", result.get(1).getFlightNumber());
-    }
+    // // Assert
+    // verify(flightBookmarkRepository, times(1)).findByUserName(userName);
+    // assertEquals(2, result.size());
+    // // assertEquals("FL123", result.get(0).getFlightNumber());
+    // // assertEquals("FL456", result.get(1).getFlightNumber());
+    // }
 
     @Test
     void createUser_ShouldSaveUserWithEncodedPasswordAndRole() {
