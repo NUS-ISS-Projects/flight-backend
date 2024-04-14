@@ -1,9 +1,11 @@
 package com.webapp.flightsearch.util;
 
 import com.webapp.flightsearch.dto.BookmarkDto;
+import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.JourneyDetails;
 import com.webapp.flightsearch.entity.Segment;
+import com.webapp.flightsearch.entity.User;
 
 import java.util.ArrayList;
 
@@ -13,6 +15,7 @@ import java.util.Map;
 
 import java.util.stream.Collectors;
 
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 
@@ -118,4 +121,23 @@ public class FirestoreRetriever {
 
         return segment;
     }
+
+    public LoginDto getUserFromFirestore(Firestore firestore, String userName) {
+        try {
+            DocumentReference userRef = firestore.collection("users").document(userName);
+            DocumentSnapshot snapshot = userRef.get().get();
+            if (snapshot.exists()) {
+                // Convert Firestore document to User object
+                LoginDto user = snapshot.toObject(LoginDto.class);
+                return user;
+            } else {
+                // User not found
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

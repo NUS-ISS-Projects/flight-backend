@@ -45,9 +45,20 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {
         try {
+            Firestore firestore = FirestoreClient.getFirestore();
+            FirestoreRetriever retreiver = new FirestoreRetriever(firestore);
+            LoginDto user = retreiver.getUserFromFirestore(firestore, loginDto.getUsername());
             Authentication authentication = authenticationManager
                     .authenticate(
                             new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+
+            System.out.println(user);
+            // // validate via firebase
+            // Authentication authenticationFirebase = authenticationManager
+            // .authenticate(
+            // new UsernamePasswordAuthenticationToken(user.getUsername(),
+            // user.getPassword()));
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String token = JwtUtil.generateJwtToken(authentication);
             return new ResponseEntity<>(token, HttpStatus.OK);
@@ -68,10 +79,9 @@ public class UserController {
         }
         User user = userDetail.createUser(signUpDto);
 
-        // Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
-        // instance
-        // FirestoreWriter userWriter = new FirestoreWriter();
-        // userWriter.saveUserToFirestore(firestore, user);
+        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
+        FirestoreWriter userWriter = new FirestoreWriter();
+        userWriter.saveUserToFirestore(firestore, user);
 
         return ResponseEntity.ok("User is registered successfully! " + user);
     }
@@ -84,21 +94,39 @@ public class UserController {
 
     @PutMapping("/editProfile/{userName}")
     public ResponseEntity<?> editProfile(@PathVariable String userName,
-                                         @RequestBody User userDetails) {
+            @RequestBody User userDetails) {
 
         User user = userRepository.findByUserName(userName);
+        System.out.println(userDetails);
+        if (user != null) {
+            if (userDetails.getEmail() != null) {
+                user.setEmail(userDetails.getEmail());
+            }
+            if (userDetails.getUserName() != null) {
+                user.setUserName(userDetails.getUserName());
+            }
+            if (userDetails.getName() != null) {
+                user.setName(userDetails.getName());
+            }
+            User updatedUser = userRepository.save(user);
 
-        user.setEmail(userDetails.getEmail());
-        user.setUserName(userDetails.getUserName());
-        user.setName(userDetails.getName());
-        User updatedUser = userRepository.save(user);
+            Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
+            FirestoreWriter userWriter = new FirestoreWriter();
+            userWriter.saveUserToFirestore(firestore, updatedUser);
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            // Handle the case where user is null
+            System.out.println(userDetails);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userDetails);
+        }
 
-        return ResponseEntity.ok(updatedUser);
     }
 
     @PutMapping("/change-password/{userName}")
     public ResponseEntity<?> changePassword(@PathVariable String userName, @RequestBody User passwords) {
         User user = userRepository.findByUserName(userName);
+        System.out.println(user);
+        System.out.println(passwords);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
@@ -108,12 +136,15 @@ public class UserController {
         }
         user.setPassword(passwordEncoder.encode(passwords.getNewPassword()));
         userRepository.save(user);
+        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
+        FirestoreWriter userWriter = new FirestoreWriter();
+        userWriter.saveUserToFirestore(firestore, user);
         return ResponseEntity.ok("Password changed successfully.");
     }
 
     @PostMapping("/{userName}/bookmark")
     public ResponseEntity<Map<String, Object>> bookmarkFlight(@PathVariable String userName,
-                                                              @RequestBody BookmarkDto savedBookmark) {
+            @RequestBody BookmarkDto savedBookmark) {
         System.out.println("Received userName: " + userName);
         System.out.println("Received bookmark details: " + savedBookmark);
         FlightBookmark flightBookmark = userDetail.bookmarkFlight(userName, savedBookmark);
