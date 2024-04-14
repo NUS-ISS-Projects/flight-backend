@@ -1,29 +1,19 @@
 package com.webapp.flightsearch.controller;
 
-import com.google.cloud.firestore.Firestore;
-import com.google.firebase.cloud.FirestoreClient;
 import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.UserRepository;
-import com.webapp.flightsearch.service.UserDetail;
-import com.webapp.flightsearch.util.FirestoreRetriever;
-import com.webapp.flightsearch.util.FirestoreWriter;
-import com.webapp.flightsearch.util.JwtUtil;
+import com.webapp.flightsearch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,135 +27,84 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private UserDetail userDetail;
+    private UserService userService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<String> loginUser(@RequestBody LoginDto loginDto) {
         try {
-            Firestore firestore = FirestoreClient.getFirestore();
-            FirestoreRetriever retreiver = new FirestoreRetriever(firestore);
-            LoginDto user = retreiver.getUserFromFirestore(firestore, loginDto.getUsername());
-            Authentication authentication = authenticationManager
-                    .authenticate(
-                            new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
-
-            System.out.println(user);
-            // // validate via firebase
-            // Authentication authenticationFirebase = authenticationManager
-            // .authenticate(
-            // new UsernamePasswordAuthenticationToken(user.getUsername(),
-            // user.getPassword()));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = JwtUtil.generateJwtToken(authentication);
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            String token = userService.loginUser(loginDto);
+            return ResponseEntity.ok(token);
         } catch (AuthenticationException e) {
-            return new ResponseEntity<>("Login failed: Invalid username or password.", HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.badRequest().body("Login failed: Invalid username or password.");
         }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto) throws FileNotFoundException {
-        // checking for username exists in a database
-        if (userRepository.existsByUserName(signUpDto.getUsername())) {
-            return new ResponseEntity<>("Username is already exist!", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto) {
+        try {
+            User user = userService.createUser(signUpDto);
+            return ResponseEntity.ok("User is registered successfully! " + user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        // checking for email exists in a database
-        if (userRepository.existsByEmail(signUpDto.getEmail())) {
-            return new ResponseEntity<>("Email is already exist!", HttpStatus.BAD_REQUEST);
-        }
-        User user = userDetail.createUser(signUpDto);
-
-        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
-        FirestoreWriter userWriter = new FirestoreWriter();
-        userWriter.saveUserToFirestore(firestore, user);
-
-        return ResponseEntity.ok("User is registered successfully! " + user);
     }
 
     @GetMapping("/userProfile/{userName}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userName) {
-        User user = userRepository.findByUserName(userName);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        try {
+            User user = UserService.loadUserByUsername(userName);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/editProfile/{userName}")
     public ResponseEntity<?> editProfile(@PathVariable String userName,
-            @RequestBody User userDetails) {
-
-        User user = userRepository.findByUserName(userName);
-        System.out.println(userDetails);
-        if (user != null) {
-            if (userDetails.getEmail() != null) {
-                user.setEmail(userDetails.getEmail());
-            }
-            if (userDetails.getUserName() != null) {
-                user.setUserName(userDetails.getUserName());
-            }
-            if (userDetails.getName() != null) {
-                user.setName(userDetails.getName());
-            }
-            User updatedUser = userRepository.save(user);
-
-            Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
-            FirestoreWriter userWriter = new FirestoreWriter();
-            userWriter.saveUserToFirestore(firestore, updatedUser);
+                                         @RequestBody User userDetails) {
+        try {
+            User updatedUser = UserService.editProfile(userName, userDetails);
             return ResponseEntity.ok(updatedUser);
-        } else {
-            // Handle the case where user is null
-            System.out.println(userDetails);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userDetails);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(userDetails + "Failed to edit profile");
         }
-
     }
 
     @PutMapping("/change-password/{userName}")
     public ResponseEntity<?> changePassword(@PathVariable String userName, @RequestBody User passwords) {
-        User user = userRepository.findByUserName(userName);
-        System.out.println(user);
-        System.out.println(passwords);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        try {
+            User updatedUser = userService.changePassword(userName, passwords);
+            return ResponseEntity.ok("Password changed successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(userName + "Failed to change Password");
         }
-        boolean matches = passwordEncoder.matches(passwords.getOldPassword(), user.getPassword());
-        if (!matches) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password does not match.");
-        }
-        user.setPassword(passwordEncoder.encode(passwords.getNewPassword()));
-        userRepository.save(user);
-        Firestore firestore = FirestoreClient.getFirestore(); // Obtain Firestore
-        FirestoreWriter userWriter = new FirestoreWriter();
-        userWriter.saveUserToFirestore(firestore, user);
-        return ResponseEntity.ok("Password changed successfully.");
     }
 
     @PostMapping("/{userName}/bookmark")
     public ResponseEntity<Map<String, Object>> bookmarkFlight(@PathVariable String userName,
-            @RequestBody BookmarkDto savedBookmark) {
-        System.out.println("Received userName: " + userName);
-        System.out.println("Received bookmark details: " + savedBookmark);
-        FlightBookmark flightBookmark = userDetail.bookmarkFlight(userName, savedBookmark);
+                                                              @RequestBody BookmarkDto savedBookmark) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Bookmark added successfully!");
-        response.put("bookmark", flightBookmark);
-
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreWriter bookmarkWriter = new FirestoreWriter();
-        bookmarkWriter.saveBookMarkToFirestore(firestore, flightBookmark, savedBookmark);
-
-        return ResponseEntity.ok(response);
+        try {
+            FlightBookmark flightBookmark = userService.bookmarkFlight(userName, savedBookmark);
+            response.put("message", "Bookmark added successfully!");
+            response.put("bookmark", flightBookmark);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("message", "Error in Bookmarking");
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @GetMapping("/{userName}/bookmarks")
     public ResponseEntity<List<BookmarkDto>> getBookmarks(@PathVariable String userName) {
-
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        List<BookmarkDto> bookmarks = retriever.getBookmarks(userName);
-        System.out.println(bookmarks);
-        return ResponseEntity.ok(bookmarks);
+        try {
+            List<BookmarkDto> bookmarks = userService.getFlightBookmarks(userName);
+            return ResponseEntity.ok(bookmarks);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 }

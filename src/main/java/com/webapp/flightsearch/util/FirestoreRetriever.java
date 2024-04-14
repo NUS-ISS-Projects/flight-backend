@@ -1,29 +1,48 @@
 package com.webapp.flightsearch.util;
 
-import com.webapp.flightsearch.dto.BookmarkDto;
-import com.webapp.flightsearch.dto.LoginDto;
-import com.webapp.flightsearch.entity.FlightBookmark;
-import com.webapp.flightsearch.entity.JourneyDetails;
-import com.webapp.flightsearch.entity.Segment;
-import com.webapp.flightsearch.entity.User;
-
-import java.util.ArrayList;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import java.util.stream.Collectors;
-
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.webapp.flightsearch.dto.BookmarkDto;
+import com.webapp.flightsearch.dto.LoginDto;
+import com.webapp.flightsearch.entity.JourneyDetails;
+import com.webapp.flightsearch.entity.Segment;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FirestoreRetriever {
     private final Firestore firestore;
 
+    @Autowired
     public FirestoreRetriever(Firestore firestore) {
         this.firestore = firestore;
+    }
+
+    public LoginDto getUserFromFirestore(Firestore firestore, String userName) {
+        try {
+            DocumentReference userRef = firestore.collection("users").document(userName);
+            DocumentSnapshot snapshot = userRef.get().get();
+            if (snapshot.exists()) {
+                LoginDto user = snapshot.toObject(LoginDto.class);
+                return user;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ApiFuture<DocumentSnapshot> getUserByUsernameCheck(String userName) {
+        DocumentReference docRef = firestore.collection("users").document(userName);
+        return docRef.get();
     }
 
     public List<BookmarkDto> getBookmarks(String userName) {
@@ -120,24 +139,6 @@ public class FirestoreRetriever {
         segment.setFlightNumber(flightNumber);
 
         return segment;
-    }
-
-    public LoginDto getUserFromFirestore(Firestore firestore, String userName) {
-        try {
-            DocumentReference userRef = firestore.collection("users").document(userName);
-            DocumentSnapshot snapshot = userRef.get().get();
-            if (snapshot.exists()) {
-                // Convert Firestore document to User object
-                LoginDto user = snapshot.toObject(LoginDto.class);
-                return user;
-            } else {
-                // User not found
-                return null;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
 }
