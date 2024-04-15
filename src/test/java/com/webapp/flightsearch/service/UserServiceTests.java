@@ -3,9 +3,7 @@ package com.webapp.flightsearch.service;
 import com.webapp.flightsearch.repository.FlightBookmarkRepository;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class UserServiceTests {
@@ -25,10 +23,10 @@ class UserServiceTests {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.openMocks(this);
+//    }
 
 //    @Test
 //    void loadUserByUsername() {

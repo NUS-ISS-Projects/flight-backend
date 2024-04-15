@@ -9,6 +9,7 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.entity.JourneyDetails;
 import com.webapp.flightsearch.entity.Segment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Service
 public class FirestoreRetriever {
     private final Firestore firestore;
 
@@ -24,7 +26,7 @@ public class FirestoreRetriever {
         this.firestore = firestore;
     }
 
-    public LoginDto getUserFromFirestore(Firestore firestore, String userName) {
+    public LoginDto getUserFromFirestore(String userName) {
         try {
             DocumentReference userRef = firestore.collection("users").document(userName);
             DocumentSnapshot snapshot = userRef.get().get();

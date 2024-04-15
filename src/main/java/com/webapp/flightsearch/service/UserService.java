@@ -1,16 +1,12 @@
 package com.webapp.flightsearch.service;
 
 import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.firebase.cloud.FirestoreClient;
 import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SegmentDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.*;
-import com.webapp.flightsearch.repository.FlightBookmarkRepository;
 import com.webapp.flightsearch.repository.RoleRepository;
-import com.webapp.flightsearch.repository.UserRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
 import com.webapp.flightsearch.util.JwtUtil;
@@ -37,16 +33,17 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
+    private final FirestoreRetriever firestoreRetriever;
+    private final FirestoreWriter firestoreWriter;
 
     @Autowired
-    UserRepository userRepo;
-    @Autowired
-    private FlightBookmarkRepository flightBookmarkRepository;
+    public UserService(FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter) {
+        this.firestoreRetriever = firestoreRetriever;
+        this.firestoreWriter = firestoreWriter;
+    }
 
     public String loginUser(LoginDto loginDto) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        LoginDto user = retriever.getUserFromFirestore(firestore, loginDto.getUsername());
+        LoginDto user = firestoreRetriever.getUserFromFirestore(loginDto.getUsername());
         Authentication authentication = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
@@ -56,9 +53,7 @@ public class UserService {
     }
 
     public User createUser(SignUpDto signUpDto) throws Exception {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        DocumentSnapshot usernameSnapshot = retriever.getUserByUsernameCheck(signUpDto.getUsername()).get();
+        DocumentSnapshot usernameSnapshot = firestoreRetriever.getUserByUsernameCheck(signUpDto.getUsername()).get();
         if (usernameSnapshot.exists()) {
             throw new Exception("Username is already exist!");
         }
@@ -69,18 +64,14 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
         Role roles = roleRepository.findByName("ROLE_ADMIN").orElse(null);
         user.setRoles(Collections.singleton(roles));
-
-        FirestoreWriter userWriter = new FirestoreWriter();
-        userWriter.saveUserToFirestore(firestore, user);
+        firestoreWriter.saveUserToFirestore(user);
 
         return user;
     }
 
-    public static User loadUserByUsername(String username) throws UsernameNotFoundException {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
-            DocumentSnapshot documentSnapshot = retriever.getUserByUsernameCheck(username).get();
+            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(username).get();
             if (documentSnapshot.exists()) {
                 User user = new User();
                 user.setName(documentSnapshot.getString("name"));
@@ -97,12 +88,9 @@ public class UserService {
         }
     }
 
-    public static User editProfile(String userName, User userDetails) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        FirestoreWriter userWriter = new FirestoreWriter();
+    public User editProfile(String userName, User userDetails) {
         try {
-            DocumentSnapshot documentSnapshot = retriever.getUserByUsernameCheck(userName).get();
+            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
             if (documentSnapshot.exists()) {
                 User updatedUser = new User();
                 if (userDetails.getEmail() != null) {
@@ -113,7 +101,7 @@ public class UserService {
                 }
                 updatedUser.setUserName(documentSnapshot.getString("userName"));
                 updatedUser.setPassword(documentSnapshot.getString("password"));
-                userWriter.saveUserToFirestore(firestore, updatedUser);
+                firestoreWriter.saveUserToFirestore(updatedUser);
                 return updatedUser;
             } else {
                 throw new UsernameNotFoundException("User not found with username: " + userName);
@@ -125,11 +113,8 @@ public class UserService {
     }
 
     public User changePassword(String userName, User passwords) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        FirestoreWriter userWriter = new FirestoreWriter();
         try {
-            DocumentSnapshot documentSnapshot = retriever.getUserByUsernameCheck(userName).get();
+            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
             if (documentSnapshot.exists()) {
                 boolean matches = passwordEncoder.matches(passwords.getOldPassword(), documentSnapshot.getString("password"));
                 if (matches) {
@@ -138,7 +123,7 @@ public class UserService {
                     updatedUser.setUserName(documentSnapshot.getString("userName"));
                     updatedUser.setEmail(documentSnapshot.getString("email"));
                     updatedUser.setPassword(passwordEncoder.encode(passwords.getNewPassword()));
-                    userWriter.saveUserToFirestore(firestore, updatedUser);
+                    firestoreWriter.saveUserToFirestore(updatedUser);
                     return updatedUser;
                 } else {
                     throw new RuntimeException("Old password does not match.");
@@ -155,17 +140,14 @@ public class UserService {
 
     @Transactional
     public FlightBookmark bookmarkFlight(String userName, BookmarkDto savedBookmark) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
-        FirestoreWriter bookmarkWriter = new FirestoreWriter();
         try {
-            DocumentSnapshot documentSnapshot = retriever.getUserByUsernameCheck(userName).get();
+            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
             if (documentSnapshot.exists()) {
                 FlightBookmark bookmark = new FlightBookmark();
                 bookmark.setUserName(userName);
                 setFlightBookmarkDetails(bookmark, savedBookmark);
                 setJourneyDetails(bookmark, savedBookmark);
-                bookmarkWriter.saveBookMarkToFirestore(firestore, bookmark, savedBookmark);
+                firestoreWriter.saveBookMarkToFirestore(bookmark, savedBookmark);
                 return bookmark;
             } else {
                 throw new UsernameNotFoundException("User not found with username: " + userName);
@@ -177,12 +159,10 @@ public class UserService {
     }
 
     public List<BookmarkDto> getFlightBookmarks(String userName) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        FirestoreRetriever retriever = new FirestoreRetriever(firestore);
         try {
-            DocumentSnapshot documentSnapshot = retriever.getUserByUsernameCheck(userName).get();
+            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
             if (documentSnapshot.exists()) {
-                List<BookmarkDto> bookmarks = retriever.getBookmarks(userName);
+                List<BookmarkDto> bookmarks = firestoreRetriever.getBookmarks(userName);
                 return bookmarks;
             } else {
                 throw new UsernameNotFoundException("User not found with username: " + userName);

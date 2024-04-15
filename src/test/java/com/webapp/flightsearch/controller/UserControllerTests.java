@@ -1,6 +1,11 @@
 package com.webapp.flightsearch.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.User;
@@ -9,6 +14,7 @@ import com.webapp.flightsearch.repository.UserRepository;
 import com.webapp.flightsearch.service.UserService;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,8 +42,6 @@ public class UserControllerTests {
     private AuthenticationManager authenticationManager;
     @MockBean
     private FirestoreWriter firestoreWriter;
-    @MockBean
-    private FirestoreRetriever firestoreRetriever;
 
     @MockBean
     private UserRepository userRepository;
@@ -50,6 +54,28 @@ public class UserControllerTests {
 
     @MockBean
     private UserService userService;
+
+    private Firestore firestore;
+    private FirestoreRetriever firestoreRetriever;
+    private CollectionReference collectionReference;
+    private DocumentReference documentReference;
+    private ApiFuture<DocumentSnapshot> futureSnapshot;
+    private DocumentSnapshot documentSnapshot;
+
+    @BeforeEach
+    void setUp() {
+        firestore = mock(Firestore.class);
+        collectionReference = mock(CollectionReference.class);
+        documentReference = mock(DocumentReference.class);
+        futureSnapshot = mock(ApiFuture.class);
+        documentSnapshot = mock(DocumentSnapshot.class);
+
+        firestoreRetriever = new FirestoreRetriever(firestore);
+
+        when(firestore.collection("users")).thenReturn(collectionReference);
+        when(collectionReference.document(anyString())).thenReturn(documentReference);
+        when(documentReference.get()).thenReturn(futureSnapshot);
+    }
 
 
     private String asJsonString(final Object obj) {
@@ -107,19 +133,26 @@ public class UserControllerTests {
     }
 
 //    @Test
-//    void testGetUserProfile() throws Exception {
-//        String userName = "test";
-//        User user = new User();
-//        when(UserService.loadUserByUsername("user")).thenReturn(user);
+//    void testGetUserProfile_Success() throws Exception {
+//        String userName = "testUser";
+//        User mockUser = new User();
+//        mockUser.setName("John Doe");
+//        mockUser.setUserName(userName);
+//        mockUser.setEmail("john@example.com");
+//
+//        // Prepare the mocked Firestore document
+//        when(futureSnapshot.get()).thenReturn(documentSnapshot);
+//        when(documentSnapshot.exists()).thenReturn(true);
+//        when(documentSnapshot.toObject(User.class)).thenReturn(mockUser);
+//
 //
 //        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
-//                .andExpect(status().isOk());
-//        verify(userService).loadUserByUsername("user");
+//                .andExpect(status().isOk())
+//                .andExpect(content().json(asJsonString(mockUser))); // Converts mockUser to JSON for comparison
 //
-//        when(UserService.loadUserByUsername("user")).thenThrow(new Exception());
-//        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
-//                .andExpect(status().isOk());
-//        verify(userService, times(2)).loadUserByUsername(userName);
+//        verify(userService).loadUserByUsername(userName);
+//        verify(documentSnapshot).toObject(User.class);
+//
 //    }
 
 //    @Test

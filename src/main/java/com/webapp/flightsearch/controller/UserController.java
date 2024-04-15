@@ -5,13 +5,10 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
-import com.webapp.flightsearch.repository.UserRepository;
 import com.webapp.flightsearch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,14 +20,7 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserController {
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private UserService userService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody LoginDto loginDto) {
@@ -55,7 +45,7 @@ public class UserController {
     @GetMapping("/userProfile/{userName}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userName) {
         try {
-            User user = UserService.loadUserByUsername(userName);
+            User user = userService.loadUserByUsername(userName);
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -66,10 +56,10 @@ public class UserController {
     public ResponseEntity<?> editProfile(@PathVariable String userName,
                                          @RequestBody User userDetails) {
         try {
-            User updatedUser = UserService.editProfile(userName, userDetails);
+            User updatedUser = userService.editProfile(userName, userDetails);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(userDetails + "Failed to edit profile");
+            return ResponseEntity.badRequest().body(userDetails + " Failed to edit profile");
         }
     }
 
@@ -79,7 +69,7 @@ public class UserController {
             User updatedUser = userService.changePassword(userName, passwords);
             return ResponseEntity.ok("Password changed successfully.");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(userName + "Failed to change Password");
+            return ResponseEntity.badRequest().body(userName + " Failed to change Password");
         }
     }
 
