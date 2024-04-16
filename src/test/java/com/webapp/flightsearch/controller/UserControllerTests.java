@@ -1,37 +1,31 @@
 package com.webapp.flightsearch.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
+import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
+import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
-import com.webapp.flightsearch.repository.RoleRepository;
-import com.webapp.flightsearch.repository.UserRepository;
 import com.webapp.flightsearch.service.UserService;
-import com.webapp.flightsearch.util.FirestoreRetriever;
-import com.webapp.flightsearch.util.FirestoreWriter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,43 +33,7 @@ public class UserControllerTests {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private AuthenticationManager authenticationManager;
-    @MockBean
-    private FirestoreWriter firestoreWriter;
-
-    @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
-    private RoleRepository roleRepository;
-
-    @MockBean
-    private PasswordEncoder passwordEncoder;
-
-    @MockBean
     private UserService userService;
-
-    private Firestore firestore;
-    private FirestoreRetriever firestoreRetriever;
-    private CollectionReference collectionReference;
-    private DocumentReference documentReference;
-    private ApiFuture<DocumentSnapshot> futureSnapshot;
-    private DocumentSnapshot documentSnapshot;
-
-    @BeforeEach
-    void setUp() {
-        firestore = mock(Firestore.class);
-        collectionReference = mock(CollectionReference.class);
-        documentReference = mock(DocumentReference.class);
-        futureSnapshot = mock(ApiFuture.class);
-        documentSnapshot = mock(DocumentSnapshot.class);
-
-        firestoreRetriever = new FirestoreRetriever(firestore);
-
-        when(firestore.collection("users")).thenReturn(collectionReference);
-        when(collectionReference.document(anyString())).thenReturn(documentReference);
-        when(documentReference.get()).thenReturn(futureSnapshot);
-    }
 
 
     private String asJsonString(final Object obj) {
@@ -87,7 +45,7 @@ public class UserControllerTests {
     }
 
     @Test
-    void testLoginUser() throws Exception {
+    void testLoginUser_Success() throws Exception {
         LoginDto mockUser = new LoginDto();
         mockUser.setUsername("testUser");
         mockUser.setPassword("password");
@@ -98,6 +56,13 @@ public class UserControllerTests {
                         .content(asJsonString(mockUser)))
                 .andExpect(status().isOk());
         verify(userService).loginUser(any(LoginDto.class));
+    }
+
+    @Test
+    void testLoginUser_Failed() throws Exception {
+        LoginDto mockUser = new LoginDto();
+        mockUser.setUsername("testUser");
+        mockUser.setPassword("password");
 
         when(userService.loginUser(any(LoginDto.class)))
                 .thenThrow(new AuthenticationException("Login failed: Invalid username or password.") {
@@ -108,11 +73,11 @@ public class UserControllerTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(content()
                         .string(containsString("Login failed: Invalid username or password.")));
-        verify(userService, times(2)).loginUser(any(LoginDto.class));
+        verify(userService).loginUser(any(LoginDto.class));
     }
 
     @Test
-    void testRegisterUser() throws Exception {
+    void testRegisterUser_Success() throws Exception {
         SignUpDto mockUser = new SignUpDto();
 
         User user = new User();
@@ -123,106 +88,194 @@ public class UserControllerTests {
                         .content(asJsonString(mockUser)))
                 .andExpect(status().isOk());
         verify(userService).createUser(any(SignUpDto.class));
+    }
+
+    @Test
+    void testRegisterUser_Failed() throws Exception {
+        SignUpDto mockUser = new SignUpDto();
+        User user = new User();
 
         when(userService.createUser(any(SignUpDto.class))).thenThrow(new Exception());
         mockMvc.perform(post("/api/user/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(mockUser)))
                 .andExpect(status().isBadRequest());
-        verify(userService, times(2)).createUser(any(SignUpDto.class));
+        verify(userService).createUser(any(SignUpDto.class));
     }
 
-//    @Test
-//    void testGetUserProfile_Success() throws Exception {
-//        String userName = "testUser";
-//        User mockUser = new User();
-//        mockUser.setName("John Doe");
-//        mockUser.setUserName(userName);
-//        mockUser.setEmail("john@example.com");
-//
-//        // Prepare the mocked Firestore document
-//        when(futureSnapshot.get()).thenReturn(documentSnapshot);
-//        when(documentSnapshot.exists()).thenReturn(true);
-//        when(documentSnapshot.toObject(User.class)).thenReturn(mockUser);
-//
-//
-//        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(asJsonString(mockUser))); // Converts mockUser to JSON for comparison
-//
-//        verify(userService).loadUserByUsername(userName);
-//        verify(documentSnapshot).toObject(User.class);
-//
-//    }
+    @Test
+    void testGetUserProfile_Success() throws Exception {
+        String userName = "testUser";
+        User mockUser = new User();
+        mockUser.setUserName(userName);
 
-//    @Test
-//    void testEditProfile() throws Exception {
-//        String userName = "test";
-//        User userDetails = new User();
-//        doNothing().when(userService).editProfile(userName, userDetails);
-//
-//
-//        mockMvc.perform(put("/api/user/editProfile/" + userName)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(asJsonString(userDetails)))
-//                .andExpect(status().isOk());
-//
-//        verify(userService).editProfile(userName, any(User.class));
-//    }
-//
-//    @Test
-//    void testChangePassword() throws Exception {
-//        User passwords = new User();  // Setup passwords
-//        when(userService.changePassword(eq("user"), any(User.class))).thenReturn(null);
-//
-////        mockMvc.perform(put("/api/user/change-password/user")
-////                        .contentType(MediaType.APPLICATION_JSON)
-////                        .content)
-////                .andExpect(status().isOk());
-//
-//        verify(userService).changePassword(eq("user"), any(User.class));
-//    }
+        when(userService.loadUserByUsername(userName)).thenReturn(mockUser);
 
-//    @Test
-//    void testbookmarkFlight() throws Exception {
-//        String username = "admin";
-//        BookmarkDto bookmarkDto = new BookmarkDto(1,
-//                "Round Trip",
-//                "1",
-//                "1",
-//                "Economy",
-//                "SIN-NRT",
-//                "100",
-//                null,
-//                null);
-//
-//        doNothing().when(userService).bookmarkFlight(username, bookmarkDto);
-//
-//        mockMvc.perform(post("/api/user/{userName}/bookmark", username)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(new ObjectMapper().writeValueAsString(bookmarkDto)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
-//                .andExpect(jsonPath("$.bookmark.id").value(bookmarkDto.getId()));
-//    }
-//
-//    @Test
-//    @WithMockUser(username = "admin", roles = {"USER"})
-//    void getBookmarks_ShouldReturnListOfBookmarks() throws Exception {
-//        String username = "admin";
-//        List<BookmarkDto> bookmarks = Arrays.asList(
-//                new BookmarkDto(1, "FL123", username, username, username, username, username,
-//                        null, null),
-//                new BookmarkDto(2, "FL456", username, username, username, username, username,
-//                        null, null));
-//
-//        // Mock the service call to return the list of bookmarks
-//        when(userService.getFlightBookmarks(username)).thenReturn(bookmarks);
-//
-//        // Perform the GET request and verify the response
-//        mockMvc.perform(get("/api/user/{userName}/bookmarks", username)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$[0].id").value(bookmarks.get(0).getId()));
-//    }
+        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
+                .andExpect(status().isOk());
+        verify(userService).loadUserByUsername(userName);
+    }
+
+    @Test
+    void testGetUserProfile_Failed() throws Exception {
+        String userName = "testUser";
+        User mockUser = new User();
+        mockUser.setUserName(userName);
+
+        when(userService.loadUserByUsername(userName)).thenThrow(new UsernameNotFoundException("User not found"));
+        mockMvc.perform(get("/api/user/userProfile/{userName}", userName))
+                .andExpect(status().isBadRequest());
+        verify(userService).loadUserByUsername(userName);
+    }
+
+    @Test
+    void testEditProfile_Success() throws Exception {
+        String userName = "existingUser";
+        User userDetails = new User();
+        userDetails.setEmail("newemail@example.com");
+        userDetails.setName("New Name");
+
+        User updatedUser = new User();
+        updatedUser.setUserName(userName);
+        updatedUser.setEmail(userDetails.getEmail());
+        updatedUser.setName(userDetails.getName());
+
+        when(userService.editProfile(eq(userName), any(User.class))).thenReturn(updatedUser);
+
+        mockMvc.perform(put("/api/user/editProfile/{userName}", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userDetails)))
+                .andExpect(status().isOk());
+
+        verify(userService).editProfile(eq(userName), any(User.class));
+
+    }
+
+    @Test
+    void testEditProfile_Failed() throws Exception {
+        String userName = "existingUser";
+        User userDetails = new User();
+        userDetails.setEmail("newemail@example.com");
+        userDetails.setName("New Name");
+
+        User updatedUser = new User();
+        updatedUser.setUserName(userName);
+        updatedUser.setEmail(userDetails.getEmail());
+        updatedUser.setName(userDetails.getName());
+
+        when(userService.editProfile(eq(userName), any(User.class)))
+                .thenThrow(new UsernameNotFoundException("User not found with username: " + userName));
+        mockMvc.perform(put("/api/user/editProfile/{userName}", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userDetails)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Failed to edit profile")));
+
+        verify(userService).editProfile(eq(userName), any(User.class));
+
+    }
+
+    @Test
+    void testChangePassword_Sucess() throws Exception {
+        String userName = "user123";
+        User passwordDetails = new User();
+        passwordDetails.setOldPassword("oldPassword");
+        passwordDetails.setNewPassword("newPassword");
+
+        User updatedUser = new User();
+        updatedUser.setUserName(userName);
+        updatedUser.setPassword(passwordDetails.getNewPassword()); // Assuming password gets updated
+
+        when(userService.changePassword(anyString(), any(User.class))).thenReturn(updatedUser);
+
+        mockMvc.perform(put("/api/user/change-password/{userName}", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(passwordDetails)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password changed successfully."));
+
+        verify(userService).changePassword(eq(userName), any(User.class));
+    }
+
+    @Test
+    void testChangePassword_IncorrectPassword() throws Exception {
+        String userName = "user123";
+        User passwordDetails = new User();
+        passwordDetails.setOldPassword("incorrectOldPassword");
+        passwordDetails.setNewPassword("newPassword");
+
+        when(userService.changePassword(eq(userName), any(User.class)))
+                .thenThrow(new RuntimeException("Old password does not match."));
+
+        mockMvc.perform(put("/api/user/change-password/{userName}", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(passwordDetails)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(userName + " Failed to change Password"));
+
+        verify(userService).changePassword(eq(userName), any(User.class));
+    }
+
+    @Test
+    public void testBookmarkFlight_Success() throws Exception {
+        String userName = "user1";
+        BookmarkDto savedBookmark = mock(BookmarkDto.class);
+
+        FlightBookmark flightBookmark = new FlightBookmark();
+        flightBookmark.setId(1);
+        flightBookmark.setUserName(userName);
+
+        when(userService.bookmarkFlight(anyString(), any(BookmarkDto.class))).thenReturn(flightBookmark);
+
+        mockMvc.perform(post("/api/user/{userName}/bookmark", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(savedBookmark)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Bookmark added successfully!"))
+                .andExpect(jsonPath("$.bookmark.userName").value(userName));
+
+        verify(userService).bookmarkFlight(eq(userName), any(BookmarkDto.class));
+    }
+
+    @Test
+    public void testBookmarkFlight_UserNotFound() throws Exception {
+        String userName = "userNotFound";
+        BookmarkDto savedBookmark = mock(BookmarkDto.class);
+
+        when(userService.bookmarkFlight(anyString(), any(BookmarkDto.class)))
+                .thenThrow(new UsernameNotFoundException("User not found with username: " + userName));
+        mockMvc.perform(post("/api/user/{userName}/bookmark", userName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(savedBookmark)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error in Bookmarking"));
+
+        verify(userService).bookmarkFlight(eq(userName), any(BookmarkDto.class));
+    }
+
+    @Test
+    public void testGetBookmarks_Success() throws Exception {
+        String userName = "user123";
+        List<BookmarkDto> mockBookmarks = Collections.singletonList(mock(BookmarkDto.class));
+        when(userService.getFlightBookmarks(eq(userName))).thenReturn(mockBookmarks);
+
+        mockMvc.perform(get("/api/user/{userName}/bookmarks", userName)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        verify(userService).getFlightBookmarks(eq(userName));
+    }
+
+    @Test
+    public void testGetBookmarks_UserNotFound() throws Exception {
+        String userName = "nonExistentUser";
+        when(userService.getFlightBookmarks(eq(userName))).thenThrow(new UsernameNotFoundException("User not found with username: " + userName));
+
+        // When & Then
+        mockMvc.perform(get("/api/user/{userName}/bookmarks", userName))
+                .andExpect(status().isBadRequest());
+
+        verify(userService).getFlightBookmarks(eq(userName));
+    }
 }

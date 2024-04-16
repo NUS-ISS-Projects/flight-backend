@@ -12,9 +12,7 @@ import com.webapp.flightsearch.util.FirestoreWriter;
 import com.webapp.flightsearch.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,29 +25,34 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class UserService {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     private final FirestoreRetriever firestoreRetriever;
     private final FirestoreWriter firestoreWriter;
 
     @Autowired
-    public UserService(FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter) {
+    public UserService(PasswordEncoder passwordEncoder, RoleRepository roleRepository, FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter) {
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
         this.firestoreRetriever = firestoreRetriever;
         this.firestoreWriter = firestoreWriter;
     }
 
     public String loginUser(LoginDto loginDto) {
-        LoginDto user = firestoreRetriever.getUserFromFirestore(loginDto.getUsername());
-        Authentication authentication = authenticationManager
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            LoginDto user = firestoreRetriever.getUserFromFirestore(loginDto.getUsername());
+            if (user != null) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                return JwtUtil.generateJwtToken(authToken);
+            } else {
+                throw new UsernameNotFoundException("User not found with username: " + loginDto.getUsername());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch user from Firestore", e);
+        }
 
-        return JwtUtil.generateJwtToken(authentication);
     }
 
     public User createUser(SignUpDto signUpDto) throws Exception {
