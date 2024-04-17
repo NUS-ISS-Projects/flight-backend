@@ -9,8 +9,6 @@ import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
-import com.webapp.flightsearch.entity.JourneyDetails;
-import com.webapp.flightsearch.entity.Segment;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
@@ -24,9 +22,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -275,33 +270,6 @@ class UserServiceTests {
         assertEquals("User not found with username: " + username, exception.getMessage());
     }
 
-
-    void testGetFlightBookmarks_Success() throws ExecutionException, InterruptedException {
-        String userName = "testUser";
-        when(firestoreRetriever.getUserByUsernameCheck(userName)).thenReturn(mockApiFuture);
-        when(mockDocumentSnapshot.exists()).thenReturn(true);
-
-        when(mockFirestore.collection("bookmark")).thenReturn(mockCollectionReference);
-        when(mockCollectionReference.document(anyString()).get()).thenReturn(mockApiFuture);
-        when(mockApiFuture.get()).thenReturn(mockDocumentSnapshot);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("departureDetails", createDepartureDetails());
-        data.put("returnDetails", createReturnDetails());
-
-        Map<String, Object> userData = new HashMap<>();
-        userData.put(userName, Collections.singletonList(data));
-        when(mockDocumentSnapshot.getData()).thenReturn(userData);
-
-        BookmarkDto mockBookmarkDto = createMockBookmarkDto();
-        List<BookmarkDto> expectedBookmarks = Arrays.asList(mockBookmarkDto);
-        when(firestoreRetriever.getBookmarks(userName)).thenReturn(expectedBookmarks);
-
-
-        List<BookmarkDto> bookmarks = userService.getFlightBookmarks(userName);
-        assertNotNull(bookmarks);
-    }
-
     @Test
     void testGetFlightBookmarks_UserNotFound() {
         String username = "testUser";
@@ -311,43 +279,5 @@ class UserServiceTests {
             userService.getFlightBookmarks(username);
         });
         assertEquals("User not found with username: " + username, exception.getMessage());
-    }
-
-    private Map<String, Object> createDepartureDetails() {
-        Map<String, Object> departureDetails = new HashMap<>();
-        departureDetails.put("duration", "5 hours");
-        departureDetails.put("date", "2024-04-15");
-        departureDetails.put("segments", createMockSegments());
-        return departureDetails;
-    }
-
-    private Map<String, Object> createReturnDetails() {
-        Map<String, Object> returnDetails = new HashMap<>();
-        returnDetails.put("duration", "5 hours");
-        returnDetails.put("date", "2024-04-20");
-        returnDetails.put("segments", createMockSegments());
-        return returnDetails;
-    }
-
-    private Map<String, Object> createMockSegments() {
-        Map<String, Object> segment1 = new HashMap<>();
-        segment1.put("departureTime", "10:00 AM");
-
-        return segment1;
-    }
-
-    private JourneyDetails createJourneyDetails(String duration, String date, List<Segment> segments) {
-        JourneyDetails journeyDetails = new JourneyDetails();
-        journeyDetails.setDuration(duration);
-        journeyDetails.setDate(date);
-        journeyDetails.setSegments(segments);
-        return journeyDetails;
-    }
-
-    private BookmarkDto createMockBookmarkDto() {
-        Map<String, Object> segments = createMockSegments();
-        JourneyDetails departureDetails = createJourneyDetails("8 hours", "2024-04-15", (List<Segment>) segments);
-        JourneyDetails returnDetails = createJourneyDetails("8 hours", "2024-04-20", (List<Segment>) segments);
-        return new BookmarkDto(1, "round-trip", "2", "0", "economy", "NYC-LON", "$500", departureDetails, returnDetails);
     }
 }
