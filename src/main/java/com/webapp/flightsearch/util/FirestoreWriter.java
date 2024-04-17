@@ -8,17 +8,25 @@ import com.google.cloud.firestore.WriteResult;
 import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class FirestoreWriter {
+    private final Firestore firestore;
 
-    public void saveUserToFirestore(Firestore firestore, User user) {
+    @Autowired
+    public FirestoreWriter(Firestore firestore) {
+        this.firestore = firestore;
+    }
+
+    public void saveUserToFirestore(User user) {
         if (user == null) {
-            // Handle the case where user is null, maybe log an error or throw an exception
             return;
         }
         try {
@@ -38,7 +46,7 @@ public class FirestoreWriter {
         }
     }
 
-    public void saveBookMarkToFirestore(Firestore firestore, FlightBookmark flightBookmark, BookmarkDto bookmarkDto) {
+    public void saveBookMarkToFirestore(FlightBookmark flightBookmark, BookmarkDto bookmarkDto) {
         try {
             DocumentReference bookmarkRef = firestore.collection("bookmark").document(flightBookmark.getUserName());
 
