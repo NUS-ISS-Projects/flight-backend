@@ -33,7 +33,7 @@ public class JourneyDetailsTests {
     @Test
     public void testGetAndSetDate() {
         String date = "18 Jan 24";
-        journeyDetails.setDuration(date);
+        journeyDetails.setDate(date);
         assertEquals(date, journeyDetails.getDate());
     }
 
