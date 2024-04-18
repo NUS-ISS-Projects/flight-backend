@@ -57,8 +57,8 @@ jobs:
           path: target/
       - name: Copy Firebase credentials file
         run: |
-          echo $DATA | base64 -di > app/google-services.json
-          if [ ! -f "app/google-services.json" ]; then
+          echo $DATA | base64 -di > target/google-services.json
+          if [ ! -f "target/google-services.json" ]; then
             echo "Error: Firebase credentials file not found."
             exit 1
           fi   
