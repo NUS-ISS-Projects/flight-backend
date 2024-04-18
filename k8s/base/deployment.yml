@@ -33,7 +33,7 @@ spec:
                   key: amadeus-api-secret
           volumeMounts:
             - name: firebase-config
-              mountPath: "/app/google-services.json"
+              mountPath: "/app/app/google-services.json"
               subPath: "google-services.json"
               readOnly: true
           ports:
