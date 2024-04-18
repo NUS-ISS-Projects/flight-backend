@@ -3,7 +3,8 @@ name: Docker Build and Deploy to GKE
 on:
   push:
     tags:
-      - '*-release'
+      - '*-release'  # Trigger for production deployments
+      - '*-staging'  # Trigger for staging deployments
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
@@ -112,9 +113,15 @@ jobs:
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         working-directory: ./k8s/overlays/prod
   
-      - name: Apply Kubernetes Manifests with kustomize
+      - name: Apply Kubernetes Manifests with kustomize for production
+        if: contains(github.ref, '-release')
         run: |
           kustomize build ./k8s/overlays/prod | kubectl apply -f -
+        
+      - name: Apply Kubernetes Manifests with kustomize for staging
+        if: contains(github.ref, '-staging')
+        run: |
+          kustomize build ./k8s/overlays/staging | kubectl apply -f -
 
       - name: Check Deployment Status
         run: kubectl rollout status deployment/flight-application --timeout=10m
