@@ -56,7 +56,12 @@ jobs:
           name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
       - name: Copy Firebase credentials file
-        run: echo $DATA | base64 -di > google-services.json   
+        run: |
+          echo $DATA | base64 -di > app/google-services.json
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi   
       - name: List files in target directory
         run: ls target/
 
