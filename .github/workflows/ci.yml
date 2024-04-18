@@ -2,9 +2,6 @@ name: Build with Maven and Perform Unit Tests, Code Coverage and Static Analysis
 
 on:
   push:
-  pull_request:
-    branches:
-      - 'main'
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
@@ -60,7 +57,12 @@ jobs:
       - name: Copy Firebase credentials file
         env:
           DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo $DATA | base64 -di > google-services.json
+        run: |
+          echo $DATA | base64 -di > app/google-services.json
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:

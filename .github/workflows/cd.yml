@@ -3,7 +3,8 @@ name: Docker Build and Deploy to GKE
 on:
   push:
     tags:
-      - '*-release'
+      - '*-release'  # Trigger for production deployments
+      - '*-staging'  # Trigger for staging deployments
 
 env:
   IMAGE_NAME: ghcr.io/nus-iss-projects/flight-backend/flightbackend
@@ -55,8 +56,6 @@ jobs:
         with:
           name: flightsearch-0.0.1-SNAPSHOT.jar
           path: target/
-      - name: Copy Firebase credentials file
-        run: echo $DATA | base64 -di > google-services.json   
       - name: List files in target directory
         run: ls target/
 
@@ -99,6 +98,11 @@ jobs:
           kubectl get secret amadeus-api-secrets && \
           kubectl create secret generic amadeus-api-secrets --from-literal=amadeus-api-key=${{ env.AMADEUS_API_KEY }} --from-literal=amadeus-api-secret=${{ env.AMADEUS_API_SECRET }} --dry-run=client -o yaml | kubectl apply -f - || \
           kubectl create secret generic amadeus-api-secrets --from-literal=amadeus-api-key=${{ env.AMADEUS_API_KEY }} --from-literal=amadeus-api-secret=${{ env.AMADEUS_API_SECRET }}
+      - name: Create or Update Firebase config
+        run: |
+          kubectl delete secret firebase-config --ignore-not-found
+          echo $DATA | base64 -d > google-services.json
+          kubectl create secret generic firebase-config --from-file=google-services.json=google-services.json
       - name: Install kustomize
         run: |
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
@@ -109,12 +113,18 @@ jobs:
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         working-directory: ./k8s/overlays/prod
   
-      - name: Apply Kubernetes Manifests with kustomize
+      - name: Apply Kubernetes Manifests with kustomize for production
+        if: contains(github.ref, '-release')
         run: |
           kustomize build ./k8s/overlays/prod | kubectl apply -f -
+        
+      - name: Apply Kubernetes Manifests with kustomize for staging
+        if: contains(github.ref, '-staging')
+        run: |
+          kustomize build ./k8s/overlays/staging | kubectl apply -f -
 
       - name: Check Deployment Status
-        run: kubectl rollout status deployment/flight-application --timeout=2m
+        run: kubectl rollout status deployment/flight-application --timeout=10m
 
       - name: Rollback Deployment if Unsuccessful
         if: ${{ failure() }}

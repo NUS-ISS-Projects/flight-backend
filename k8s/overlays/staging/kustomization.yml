@@ -1,0 +1,6 @@
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/nus-iss-projects/flight-backend/flightbackend
+    newTag: staging  # or use a specific staging tag
