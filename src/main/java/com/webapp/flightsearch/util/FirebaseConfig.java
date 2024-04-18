@@ -36,7 +36,8 @@ public class FirebaseConfig {
         // // Construct the file path relative to the current working directory
         // String filePath = currentDirectory + File.separator + "app" + File.separator
         // + "google-services.json";
-        String filePath = "app/google-services.json";
+        // String filePath = "app/google-services.json";
+        String filePath = "/app/google-services.json";
         try {
             System.out.println("Attempting to load file from: " + filePath);
             FileInputStream serviceAccount = new FileInputStream(filePath);
