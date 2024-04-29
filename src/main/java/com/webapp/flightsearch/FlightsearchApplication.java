@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class FlightsearchApplication {
 
 	public static void main(String[] args) {
+		System.exit(0);
 		SpringApplication.run(FlightsearchApplication.class, args);
 	}
 
