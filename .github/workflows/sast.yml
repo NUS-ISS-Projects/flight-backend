@@ -1,0 +1,49 @@
+name: SAST Check
+
+on:
+  push:
+
+env:
+  AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+  AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
+  DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Retrieve firebase credentials
+        run: |
+            echo $DATA | base64 -di > app/google-services.json
+            if [ ! -f "app/google-services.json" ]; then
+              echo "Error: Firebase credentials file not found."
+              exit 1
+            fi
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Download DependencyCheck
+        run: |
+          curl -L "https://github.com/jeremylong/DependencyCheck/releases/download/v7.2.0/dependency-check-7.2.0-release.zip" -o dependency-check.zip
+          unzip dependency-check.zip -d dependency-check
+
+      - name: Run DependencyCheck
+        run: |
+          ./dependency-check/dependency-check/bin/dependency-check.sh --project "FlightBackend" --out ./reports --scan ./target --format HTML
+
+      - name: Upload DependencyCheck Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports/dependency-check-report.html
