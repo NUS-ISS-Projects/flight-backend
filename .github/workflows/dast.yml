@@ -38,6 +38,9 @@ jobs:
     name: Dockerize and push to GitHub Container Registry
     needs: setup-build-deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v2
       - name: Set build date as image tag
