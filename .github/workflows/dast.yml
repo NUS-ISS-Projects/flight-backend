@@ -85,9 +85,10 @@ jobs:
 
       - name: Run Docker container
         run: |
-          docker run -d -p 8888:8888 --name myapp -v $(pwd)/app/google-services.json:/app/google-services.json ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
-          ls $(pwd)
+          docker run -d -p 8888:8888 --name myapp -v $(pwd)/app/google-services.json:/app/app/google-services.json ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+          ls $(pwd)/app
           docker ps
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }} ls /app
       - name: Check if App is Running and Output Logs
         run: |
           until $(curl --output /dev/null --silent --head --fail http://localhost:8888); do
