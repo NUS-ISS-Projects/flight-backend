@@ -41,14 +41,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_tag: ${{ steps.set_tag.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v2
       - name: Set build date as image tag
         id: set_tag
         run: |
-          IMAGE_TAG=$(date +'%Y%m%d%H%M%S')-dast
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          echo "::set-output name=image_tag::$IMAGE_TAG"
+          echo "IMAGE_TAG=$(date +'%Y%m%d%H%M%S')-dast" >> $GITHUB_ENV
+          echo "::set-output name=image_tag::$(date +'%Y%m%d%H%M%S')-dast"
       - name: Retrieve saved jar
         uses: actions/download-artifact@v2
         with:
@@ -70,15 +71,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull Docker image
-        run: docker pull ${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.image_tag }}
+        run: docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
       - name: Run Docker container
-        run: docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.image_tag }}
+        run: docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.6.0
         with:
           target: 'http://localhost:8888'
           docker_name: 'owasp/zap2docker-stable'
-          cmd_options: '-t ${TARGET_URL} -r zap_report.html'
+          cmd_options: '-t http://localhost:8888 -r zap_report.html'
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
         with:
