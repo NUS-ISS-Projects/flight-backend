@@ -97,7 +97,7 @@ jobs:
           cat ${{ github.workspace }}/google-services.json
       - name: Run Docker container
         run: |
-          docker run -d -p 8888:8888 --name myapp -v ${{ github.workspace }}:/:z ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+          docker run -d -p 8888:8888 --name myapp -v ${{ github.workspace }}:/ ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
           ls ${{ github.workspace }}
           cat ${{ github.workspace }}/google-services.json
           docker ps
