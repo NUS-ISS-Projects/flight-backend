@@ -86,6 +86,16 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
 
+      - name: Retrieve firebase credentials
+        run: |
+          mkdir -p ${{ github.workspace }}/app
+          echo $DATA | base64 -d > ${{ github.workspace }}/app/google-services.json
+          if [ ! -f "${{ github.workspace }}/app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi
+          ls -l ${{ github.workspace }}/app
+          cat ${{ github.workspace }}/app/google-services.json
       - name: Run Docker container
         run: |
           docker run -d -p 8888:8888 --name myapp -v ${{ github.workspace }}/app:/app:z ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
