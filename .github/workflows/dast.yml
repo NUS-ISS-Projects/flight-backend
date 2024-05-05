@@ -102,6 +102,7 @@ jobs:
           ls ${{ github.workspace }}/app
           cat ${{ github.workspace }}/app/google-services.json
           docker ps
+          sleep 10
           docker exec myapp ls /app
           docker exec myapp cat /app/google-services.json
       - name: Check if App is Running and Output Logs
