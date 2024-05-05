@@ -20,6 +20,13 @@
     </properties>
     <dependencies>
 
+        <dependency>
+            <groupId>maven</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+
 
         <dependency>
             <groupId>org.hamcrest</groupId>
