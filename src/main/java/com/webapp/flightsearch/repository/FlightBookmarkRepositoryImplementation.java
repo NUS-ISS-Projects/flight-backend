@@ -1,18 +1,15 @@
 package com.webapp.flightsearch.repository;
 
 import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
 import com.webapp.flightsearch.dto.BookmarkDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public class FlightBookmarkRepositoryImplementation implements CustomFlightBookmarkRepository {
@@ -22,14 +19,14 @@ public class FlightBookmarkRepositoryImplementation implements CustomFlightBookm
 
     @Autowired
     public FlightBookmarkRepositoryImplementation(FirestoreWriter firestoreWriter,
-            FirestoreRetriever firestoreRetriever) {
+                                                  FirestoreRetriever firestoreRetriever) {
         this.firestoreWriter = firestoreWriter;
         this.firestoreRetriever = firestoreRetriever;
     }
 
     @Override
     public FlightBookmark saveBookmarkToFirebase(FlightBookmark bookmark,
-            BookmarkDto savedBookmark) {
+                                                 BookmarkDto savedBookmark) {
         firestoreWriter.saveBookMarkToFirestore(bookmark, savedBookmark);
         return bookmark;
     }

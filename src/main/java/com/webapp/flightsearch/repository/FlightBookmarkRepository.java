@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface FlightBookmarkRepository extends JpaRepository<FlightBookmark, Integer> {
     List<FlightBookmark> findByUserName(String userName);
-
-    void deleteByUserName(String userName);
 }

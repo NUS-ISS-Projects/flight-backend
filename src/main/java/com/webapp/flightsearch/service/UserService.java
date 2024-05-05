@@ -6,7 +6,6 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SegmentDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.*;
-import com.webapp.flightsearch.repository.FlightBookmarkRepository;
 import com.webapp.flightsearch.repository.FlightBookmarkRepositoryImplementation;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
@@ -36,8 +35,8 @@ public class UserService {
 
     @Autowired
     public UserService(PasswordEncoder passwordEncoder, RoleRepository roleRepository,
-            FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter,
-            FlightBookmarkRepositoryImplementation flightBookmarkRepository) {
+                       FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter,
+                       FlightBookmarkRepositoryImplementation flightBookmarkRepository) {
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.firestoreRetriever = firestoreRetriever;

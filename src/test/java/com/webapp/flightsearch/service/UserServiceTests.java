@@ -293,7 +293,6 @@ class UserServiceTests {
 
     @Test
     void testFindBookmarkByUserName_Success() {
-        // Mock data
         String userName = "testUser";
         List<FlightBookmark> expectedBookmarks = new ArrayList<>();
 
