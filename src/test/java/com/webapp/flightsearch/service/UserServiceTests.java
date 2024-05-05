@@ -25,14 +25,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 class UserServiceTests {
 
@@ -298,7 +297,6 @@ class UserServiceTests {
         String userName = "testUser";
         List<FlightBookmark> expectedBookmarks = new ArrayList<>();
 
-        // Mock behavior
         when(flightBookmarkRepository.findByUserName(userName)).thenReturn(expectedBookmarks);
 
         when(firestoreRetriever.getUserByUsernameCheck(userName)).thenReturn(mockApiFuture);
@@ -307,9 +305,7 @@ class UserServiceTests {
         BookmarkDto savedBookmark = mock(BookmarkDto.class);
         List<BookmarkDto> bookmark = userService.getFlightBookmarks(userName);
 
-        // Assertions
         assertEquals(expectedBookmarks.size(), bookmark.size());
-        // Add more assertions as needed
     }
 
 }
