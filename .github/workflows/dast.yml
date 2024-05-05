@@ -69,6 +69,10 @@ jobs:
   perform_dast_scan:
     needs: build-docker-image
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     steps:
       - name: Pull Docker image
         run: docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
