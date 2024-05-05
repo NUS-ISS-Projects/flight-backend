@@ -88,8 +88,9 @@ jobs:
         uses: zaproxy/action-baseline@v0.6.0
         with:
           target: 'http://localhost:8888'
-          docker_name: 'owasp/zap2docker-stable'
+          docker_name: 'owasp/zap2docker-stable:latest'
           cmd_options: '-t http://localhost:8888 -r zap_report.html'
+
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
         with:
