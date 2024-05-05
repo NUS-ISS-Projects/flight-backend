@@ -22,11 +22,14 @@ jobs:
           java-version: 17
       - name: Retrieve firebase credentials
         run: |
-          echo $DATA | base64 -d > app/google-services.json
-          if [ ! -f "app/google-services.json" ]; then
-            echo "Error: Firebase credentials file not found or is a directory."
+          mkdir -p ${{ github.workspace }}/app
+          echo $DATA | base64 -d > ${{ github.workspace }}/app/google-services.json
+          if [ ! -f "${{ github.workspace }}/app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
             exit 1
           fi
+          ls -l ${{ github.workspace }}/app
+          cat ${{ github.workspace }}/app/google-services.json
       - run: mvn clean install --batch-mode --errors --fail-at-end
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
@@ -90,6 +93,7 @@ jobs:
           cat ${{ github.workspace }}/app/google-services.json
           docker ps
           docker exec myapp ls /app
+          docker exec myapp cat /app/google-services.json
       - name: Check if App is Running and Output Logs
         run: |
           until $(curl --output /dev/null --silent --head --fail http://localhost:8888); do
