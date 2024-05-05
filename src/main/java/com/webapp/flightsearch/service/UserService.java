@@ -169,7 +169,12 @@ public class UserService {
     }
 
     public List<BookmarkDto> getFlightBookmarks(String userName) {
-        return flightBookmarkRepository.getFlightBookmarks(userName);
+        List<BookmarkDto> bookmarks = flightBookmarkRepository.getFlightBookmarks(userName);
+        if (bookmarks == null) {
+            throw new UsernameNotFoundException("User not found with username: " + userName);
+        }
+        return bookmarks;
+
     }
 
     private void setFlightBookmarkDetails(FlightBookmark bookmark, BookmarkDto savedBookmark) {

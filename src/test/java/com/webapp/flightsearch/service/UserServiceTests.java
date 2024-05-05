@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class UserServiceTests {
@@ -284,6 +285,7 @@ class UserServiceTests {
         String username = "testUser";
         when(firestoreRetriever.getUserByUsernameCheck(username)).thenReturn(mockApiFuture);
         when(mockDocumentSnapshot.exists()).thenReturn(false);
+        when(userService.getFlightBookmarks(username)).thenReturn(null);
         Exception exception = assertThrows(UsernameNotFoundException.class, () -> {
             userService.getFlightBookmarks(username);
         });
