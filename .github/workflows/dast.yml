@@ -86,12 +86,15 @@ jobs:
         run: |
           docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
           docker ps
-      - name: Check if App is Running
+      - name: Check if App is Running and Output Logs
         run: |
-          until $(curl --output /dev/null --silent --head --fail http://localhost:8888/api/health); do
-            echo 'Waiting for App to be ready...'
-            sleep 5
+          until $(curl --output /dev/null --silent --head --fail http://localhost:8888); do
+          echo 'Waiting for App to be ready...'
+          sleep 5
+          echo 'Checking last 10 lines of application logs:'
+          docker logs myapp --tail 30
           done
+
       - name: Pull OWASP ZAP Docker image
         env:
           USERNAME: ${{ secrets.GITHUB_USERNAME }}
