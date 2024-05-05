@@ -6,6 +6,7 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SegmentDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.*;
+import com.webapp.flightsearch.repository.FlightBookmarkRepositoryImplementation;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
@@ -30,20 +31,25 @@ public class UserService {
     private final FirestoreRetriever firestoreRetriever;
     private final FirestoreWriter firestoreWriter;
 
+    private FlightBookmarkRepositoryImplementation flightBookmarkRepository;
+
     @Autowired
-    public UserService(PasswordEncoder passwordEncoder, RoleRepository roleRepository, FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter) {
+    public UserService(PasswordEncoder passwordEncoder, RoleRepository roleRepository,
+                       FirestoreRetriever firestoreRetriever, FirestoreWriter firestoreWriter,
+                       FlightBookmarkRepositoryImplementation flightBookmarkRepository) {
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.firestoreRetriever = firestoreRetriever;
         this.firestoreWriter = firestoreWriter;
+        this.flightBookmarkRepository = flightBookmarkRepository;
     }
 
     public String loginUser(LoginDto loginDto) {
         try {
             LoginDto user = firestoreRetriever.getUserFromFirestore(loginDto.getUsername());
             if (user != null) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        loginDto.getUsername(), null);
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 return JwtUtil.generateJwtToken(authToken);
             } else {
@@ -119,7 +125,8 @@ public class UserService {
         try {
             DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
             if (documentSnapshot.exists()) {
-                boolean matches = passwordEncoder.matches(passwords.getOldPassword(), documentSnapshot.getString("password"));
+                boolean matches = passwordEncoder.matches(passwords.getOldPassword(),
+                        documentSnapshot.getString("password"));
                 if (matches) {
                     User updatedUser = new User();
                     updatedUser.setName(documentSnapshot.getString("name"));
@@ -140,7 +147,6 @@ public class UserService {
         }
     }
 
-
     @Transactional
     public FlightBookmark bookmarkFlight(String userName, BookmarkDto savedBookmark) {
         try {
@@ -150,7 +156,7 @@ public class UserService {
                 bookmark.setUserName(userName);
                 setFlightBookmarkDetails(bookmark, savedBookmark);
                 setJourneyDetails(bookmark, savedBookmark);
-                firestoreWriter.saveBookMarkToFirestore(bookmark, savedBookmark);
+                flightBookmarkRepository.saveBookmarkToFirebase(bookmark, savedBookmark);
                 return bookmark;
             } else {
                 throw new UsernameNotFoundException("User not found with username: " + userName);
@@ -162,18 +168,12 @@ public class UserService {
     }
 
     public List<BookmarkDto> getFlightBookmarks(String userName) {
-        try {
-            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
-            if (documentSnapshot.exists()) {
-                List<BookmarkDto> bookmarks = firestoreRetriever.getBookmarks(userName);
-                return bookmarks;
-            } else {
-                throw new UsernameNotFoundException("User not found with username: " + userName);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Failed to fetch user from Firestore", e);
+        List<BookmarkDto> bookmarks = flightBookmarkRepository.getFlightBookmarks(userName);
+        if (bookmarks == null) {
+            throw new UsernameNotFoundException("User not found with username: " + userName);
         }
+        return bookmarks;
+
     }
 
     private void setFlightBookmarkDetails(FlightBookmark bookmark, BookmarkDto savedBookmark) {
@@ -191,7 +191,8 @@ public class UserService {
             departureDetails.setDate(savedBookmark.getDepartureDetails().getDate());
             departureDetails.setDuration(savedBookmark.getDepartureDetails().getDuration());
             if (savedBookmark.getDepartureDetails().getSegments() != null) {
-                departureDetails.setSegments(convertSegmentDtosToSegments(savedBookmark.getDepartureDetails().getSegments()));
+                departureDetails
+                        .setSegments(convertSegmentDtosToSegments(savedBookmark.getDepartureDetails().getSegments()));
             }
             bookmark.setDepartureDetails(departureDetails);
         }

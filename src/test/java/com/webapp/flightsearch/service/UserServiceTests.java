@@ -10,6 +10,8 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
+import com.webapp.flightsearch.repository.FlightBookmarkRepository;
+import com.webapp.flightsearch.repository.FlightBookmarkRepositoryImplementation;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
@@ -23,6 +25,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,6 +39,8 @@ class UserServiceTests {
     private Firestore mockFirestore;
     @Mock
     private CollectionReference mockCollectionReference;
+    @Mock
+    private FlightBookmarkRepository flightBookmarkRepository;
 
     @Mock
     private DocumentReference mockDocumentReference;
@@ -51,7 +58,6 @@ class UserServiceTests {
     @InjectMocks
     private UserService userService;
 
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -64,7 +70,10 @@ class UserServiceTests {
         firestoreWriter = mock(FirestoreWriter.class);
         passwordEncoder = mock(PasswordEncoder.class);
         RoleRepository roleRepository = mock(RoleRepository.class);
-        userService = new UserService(passwordEncoder, roleRepository, firestoreRetriever, firestoreWriter);
+        FlightBookmarkRepositoryImplementation flightBookmarkRepository = mock(
+                FlightBookmarkRepositoryImplementation.class);
+        userService = new UserService(passwordEncoder, roleRepository, firestoreRetriever, firestoreWriter,
+                flightBookmarkRepository);
     }
 
     @Test
@@ -275,9 +284,27 @@ class UserServiceTests {
         String username = "testUser";
         when(firestoreRetriever.getUserByUsernameCheck(username)).thenReturn(mockApiFuture);
         when(mockDocumentSnapshot.exists()).thenReturn(false);
+        when(userService.getFlightBookmarks(username)).thenReturn(null);
         Exception exception = assertThrows(UsernameNotFoundException.class, () -> {
             userService.getFlightBookmarks(username);
         });
         assertEquals("User not found with username: " + username, exception.getMessage());
     }
+
+    @Test
+    void testFindBookmarkByUserName_Success() {
+        String userName = "testUser";
+        List<FlightBookmark> expectedBookmarks = new ArrayList<>();
+
+        when(flightBookmarkRepository.findByUserName(userName)).thenReturn(expectedBookmarks);
+
+        when(firestoreRetriever.getUserByUsernameCheck(userName)).thenReturn(mockApiFuture);
+        when(mockDocumentSnapshot.exists()).thenReturn(true);
+
+        BookmarkDto savedBookmark = mock(BookmarkDto.class);
+        List<BookmarkDto> bookmark = userService.getFlightBookmarks(userName);
+
+        assertEquals(expectedBookmarks.size(), bookmark.size());
+    }
+
 }
