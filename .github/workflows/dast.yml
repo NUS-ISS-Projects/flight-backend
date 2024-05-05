@@ -94,13 +94,13 @@ jobs:
             echo "Error: Firebase credentials file not found."
             exit 1
           fi
-          ls -l ${{ github.workspace }}/app
-          cat ${{ github.workspace }}/app/google-services.json
+          ls -l ${{ github.workspace }}/
+          cat ${{ github.workspace }}/google-services.json
       - name: Run Docker container
         run: |
-          docker run -d -p 8888:8888 --name myapp -v ${{ github.workspace }}/app:/app:z ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
-          ls ${{ github.workspace }}/app
-          cat ${{ github.workspace }}/app/google-services.json
+          docker run -d -p 8888:8888 --name myapp -v ${{ github.workspace }}:/:z ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+          ls ${{ github.workspace }}
+          cat ${{ github.workspace }}/google-services.json
           docker ps
       - name: Check if App is Running and Output Logs
         run: |
