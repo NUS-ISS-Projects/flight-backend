@@ -90,6 +90,11 @@ jobs:
           target: 'http://localhost:8888'
           docker_name: 'owasp/zap2docker-stable:latest'
           cmd_options: '-t http://localhost:8888 -r zap_report.html'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue_title: 'ZAP Scan Baseline Report'
+          fail_action: false
+          allow_issue_writing: true
+      
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
