@@ -82,9 +82,18 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+
+      - name: Retrieve firebase credentials
+        run: |
+          echo $DATA | base64 -d > app/google-services.json
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Error: Firebase credentials file not found."
+            exit 1
+          fi  
       - name: Run Docker container
         run: |
-          docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+          docker run -d -p 8888:8888 --name myapp -v $(pwd)/app/google-services.json:/app/google-services.json ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+          ls $(pwd)
           docker ps
       - name: Check if App is Running and Output Logs
         run: |
@@ -102,10 +111,10 @@ jobs:
         run: | 
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           docker pull zaproxy/zap-stable
-    
+      
       - name: Run OWASP ZAP
-        run: docker run -d -p 8888:8888 --name zap zaproxy/zap-stable
-    
+        run: docker run -d -p 9090:9090 --name zap zaproxy/zap-stable
+      
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.6.0
         with:
