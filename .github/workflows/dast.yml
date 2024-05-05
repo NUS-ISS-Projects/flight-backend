@@ -88,9 +88,8 @@ jobs:
 
       - name: Retrieve firebase credentials
         run: |
-          mkdir -p ${{ github.workspace }}/app
-          echo $DATA | base64 -d > ${{ github.workspace }}/app/google-services.json
-          if [ ! -f "${{ github.workspace }}/app/google-services.json" ]; then
+          echo $DATA | base64 -d > ${{ github.workspace }}/google-services.json
+          if [ ! -f "${{ github.workspace }}/google-services.json" ]; then
             echo "Error: Firebase credentials file not found."
             exit 1
           fi
