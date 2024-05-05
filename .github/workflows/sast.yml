@@ -11,6 +11,10 @@ env:
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     steps:
       - uses: actions/checkout@v2
       - name: Retrieve firebase credentials
