@@ -169,18 +169,7 @@ public class UserService {
     }
 
     public List<BookmarkDto> getFlightBookmarks(String userName) {
-        try {
-            DocumentSnapshot documentSnapshot = firestoreRetriever.getUserByUsernameCheck(userName).get();
-            if (documentSnapshot.exists()) {
-                List<BookmarkDto> bookmarks = firestoreRetriever.getBookmarks(userName);
-                return bookmarks;
-            } else {
-                throw new UsernameNotFoundException("User not found with username: " + userName);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Failed to fetch user from Firestore", e);
-        }
+        return flightBookmarkRepository.getFlightBookmarks(userName);
     }
 
     private void setFlightBookmarkDetails(FlightBookmark bookmark, BookmarkDto savedBookmark) {
