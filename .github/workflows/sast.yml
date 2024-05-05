@@ -12,13 +12,14 @@ jobs:
   dependency-check:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Retrieve firebase credentials
         run: |
           echo $DATA | base64 -di > app/google-services.json
           if [ ! -f "app/google-services.json" ]; then
             echo "Error: Firebase credentials file not found."
             exit 1
-          fi  
+          fi   
       - name: Checkout code
         uses: actions/checkout@v3
 
