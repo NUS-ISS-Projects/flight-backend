@@ -11,6 +11,7 @@ import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
 import com.webapp.flightsearch.repository.FlightBookmarkRepository;
+import com.webapp.flightsearch.repository.FlightBookmarkRepositoryImplementation;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
@@ -69,7 +70,10 @@ class UserServiceTests {
         firestoreWriter = mock(FirestoreWriter.class);
         passwordEncoder = mock(PasswordEncoder.class);
         RoleRepository roleRepository = mock(RoleRepository.class);
-        userService = new UserService(passwordEncoder, roleRepository, firestoreRetriever, firestoreWriter);
+        FlightBookmarkRepositoryImplementation flightBookmarkRepository = mock(
+                FlightBookmarkRepositoryImplementation.class);
+        userService = new UserService(passwordEncoder, roleRepository, firestoreRetriever, firestoreWriter,
+                flightBookmarkRepository);
     }
 
     @Test
