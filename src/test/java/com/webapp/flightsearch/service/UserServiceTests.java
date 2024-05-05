@@ -10,6 +10,7 @@ import com.webapp.flightsearch.dto.LoginDto;
 import com.webapp.flightsearch.dto.SignUpDto;
 import com.webapp.flightsearch.entity.FlightBookmark;
 import com.webapp.flightsearch.entity.User;
+import com.webapp.flightsearch.repository.FlightBookmarkRepository;
 import com.webapp.flightsearch.repository.RoleRepository;
 import com.webapp.flightsearch.util.FirestoreRetriever;
 import com.webapp.flightsearch.util.FirestoreWriter;
@@ -37,6 +38,8 @@ class UserServiceTests {
     private Firestore mockFirestore;
     @Mock
     private CollectionReference mockCollectionReference;
+    @Mock
+    private FlightBookmarkRepository flightBookmarkRepository;
 
     @Mock
     private DocumentReference mockDocumentReference;
@@ -300,6 +303,7 @@ class UserServiceTests {
 
         // Assertions
         assertEquals(expectedBookmarks.size(), bookmark.size());
-        // Add more assertions as needed
-    }
+        // Add more assertions as needed
+    }
+
 }
