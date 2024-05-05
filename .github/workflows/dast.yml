@@ -84,6 +84,8 @@ jobs:
           docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
       - name: Run Docker container
         run: docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+      - name: Pull OWASP ZAP Docker image
+        run: docker pull owasp/zap2docker-stable:latest
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.6.0
         with:
