@@ -73,6 +73,7 @@ jobs:
       contents: write
       pull-requests: write
       repository-projects: write
+      packages: write
     steps:
       - name: Pull Docker image
         env:
