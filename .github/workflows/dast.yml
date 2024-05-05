@@ -75,7 +75,12 @@ jobs:
       repository-projects: write
     steps:
       - name: Pull Docker image
-        run: docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
+        env:
+          USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          PASSWORD: ${{ secrets.GITHUB_PASSWORD }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+          docker pull ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
       - name: Run Docker container
         run: docker run -d -p 8888:8888 --name myapp ${{ env.IMAGE_NAME }}:${{ needs.build-docker-image.outputs.image_tag }}
       - name: OWASP ZAP Scan
