@@ -28,6 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
+
 class UserServiceTests {
 
     @Mock
@@ -50,7 +52,6 @@ class UserServiceTests {
 
     @InjectMocks
     private UserService userService;
-
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -280,4 +281,24 @@ class UserServiceTests {
         });
         assertEquals("User not found with username: " + username, exception.getMessage());
     }
+
+    @Test
+    void testFindBookmarkByUserName_Success() {
+        // Mock data
+        String userName = "testUser";
+        List<FlightBookmark> expectedBookmarks = new ArrayList<>();
+
+        // Mock behavior
+        when(flightBookmarkRepository.findByUserName(userName)).thenReturn(expectedBookmarks);
+
+        when(firestoreRetriever.getUserByUsernameCheck(userName)).thenReturn(mockApiFuture);
+        when(mockDocumentSnapshot.exists()).thenReturn(true);
+
+        BookmarkDto savedBookmark = mock(BookmarkDto.class);
+        List<BookmarkDto> bookmark = userService.getFlightBookmarks(userName);
+
+        // Assertions
+        assertEquals(expectedBookmarks.size(), bookmark.size());
+        // Add more assertions as needed
+    }
 }
